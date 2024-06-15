@@ -29,15 +29,23 @@ function App() {
   };
 
   const addReference = async () => {
-    const response = await axiosInstance.post("/add-reference", reference);
+    const response = await axiosInstance.post('/add-reference', {ref_name: reference.name, ref_link: reference.link});
     setRstDocument([...rstDocument, response.data.rst]);
   };
-
+  
   const generateRst = async () => {
-    const response = await axiosInstance.post("/generate-rst", {
-      content_list: rstDocument,
-    });
-    console.log(response.data.rst);
+    try {
+      const response = await axiosInstance.post('/generate-rst', { content_list: rstDocument }, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'generated_document.rst');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error generating RST:', error);
+    }
   };
 
   return (
