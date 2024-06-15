@@ -1,9 +1,15 @@
-from flask import Flask, request, jsonify, send_from_directory
+import io
+import os
+from flask import Flask, request, jsonify, send_from_directory, send_file, make_response
 from flask_cors import CORS
 from docutils.core import publish_string
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
-CORS(app)  # Enable CORS
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+
+GENERATED_FILES_DIR = "../generated_files"
+if not os.path.exists(GENERATED_FILES_DIR):
+    os.makedirs(GENERATED_FILES_DIR)
 
 @app.route('/')
 def serve():
@@ -35,8 +41,19 @@ def add_reference():
 def generate_rst():
     data = request.json
     content_list = data['content_list']
-    full_rst = '\n'.join(content_list)
-    return jsonify({'rst': full_rst})
+    if content_list:
+        full_rst = '\n'.join(content_list)
+        # file_path = os.path.join(GENERATED_FILES_DIR, 'generated_document.rst')
+        # with open(file_path, 'w') as file:
+        #     file.write(full_rst)
+        # return send_file(file_path, as_attachment=True)
+        rst_file = io.BytesIO()
+        rst_file.write(full_rst.encode('utf-8'))
+        rst_file.seek(0)
+        response = make_response(send_file(rst_file, as_attachment=True, download_name='generated_document.rst', mimetype='text/x-rst'))
+        return response
+    else:
+        return jsonify({'error': 'Missing content_list'}), 400
 
 @app.route('/<path:path>')
 def static_proxy(path):
