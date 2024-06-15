@@ -18,9 +18,10 @@ function App() {
   };
   
   const addReference = async () => {
-    const response = await axiosInstance.post('/add-reference', reference);
+    const response = await axiosInstance.post('/add-reference', {ref_name: reference.name, ref_link: reference.link});
     setRstDocument([...rstDocument, response.data.rst]);
   };
+
   
   const generateRst = async () => {
     const response = await axiosInstance.post('/generate-rst', { content_list: rstDocument });

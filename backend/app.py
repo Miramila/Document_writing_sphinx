@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from docutils.core import publish_string
 
-app = Flask(__name__, static_folder='build', static_url_path='/')
+app = Flask(__name__, static_folder='static', static_url_path='/')
 CORS(app)  # Enable CORS
 
 @app.route('/')
