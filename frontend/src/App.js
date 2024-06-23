@@ -22,7 +22,7 @@ function App() {
 
   const addContent = () => {
     const rstContent = `${content}\n`;
-    setRstDocument(p+ rstConterev => prev nt);
+    setRstDocument(prev => prev + rstContent);
     setContent("");
   };
 
@@ -67,7 +67,7 @@ function App() {
         <Typography.Title level={5}>Add Content</Typography.Title>
         <Space>
           <TextArea
-            rows={1}
+            rows={5}
             placeholder="please enter the content, max length 400"
             maxLength={400}
             value={content}
