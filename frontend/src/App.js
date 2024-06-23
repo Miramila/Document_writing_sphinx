@@ -1,41 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axiosInstance from "./axiosInstance";
-
-import {
-  Button,
-  Divider,
-  Input,
-  Space,
-  Typography,
-} from "antd";
+import { Button, Divider, Input, Space, Typography } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 
 function App() {
-
   const { TextArea } = Input;
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [reference, setReference] = useState({ name: "", link: "" });
-  const [rstDocument, setRstDocument] = useState([]);
+  const [rstDocument, setRstDocument] = useState("");
 
-  const addTitle = async () => {
-    const response = await axiosInstance.post("/add-title", { title });
-    setRstDocument([...rstDocument, response.data.rst]);
+  const handleEditableRstChange = (e) => {
+    setRstDocument(e.target.value);
   };
 
-  const addContent = async () => {
-    const response = await axiosInstance.post("/add-content", { content });
-    setRstDocument([...rstDocument, response.data.rst]);
+  const addTitle = () => {
+    const rstTitle = `${title}\n${"=".repeat(title.length)}\n`;
+    setRstDocument(prev => prev + rstTitle);
+    setTitle("");
   };
 
-  const addReference = async () => {
-    const response = await axiosInstance.post('/add-reference', {ref_name: reference.name, ref_link: reference.link});
-    setRstDocument([...rstDocument, response.data.rst]);
+  const addContent = () => {
+    const rstContent = `${content}\n`;
+    setRstDocument(p+ rstConterev => prev nt);
+    setContent("");
   };
-  
+
+  const addReference = () => {
+    const rstReference = `.. _${reference.name}: ${reference.link}\n`;
+    setRstDocument(prev => prev + rstReference);
+    setReference({ name: "", link: "" });
+  };
+
   const generateRst = async () => {
     try {
-      const response = await axiosInstance.post('/generate-rst', { content_list: rstDocument }, { responseType: 'blob' });
+      const response = await axiosInstance.post('/generate-rst', { content_list: rstDocument.split("\n") }, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -55,7 +54,7 @@ function App() {
         <Typography.Title level={5}>Add Title</Typography.Title>
         <Space>
           <Input
-            placeholder="please enter the title "
+            placeholder="please enter the title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -83,7 +82,7 @@ function App() {
         <Typography.Title level={5}>Add Reference</Typography.Title>
         <Space>
           <Input
-            placeholder="reference name "
+            placeholder="reference name"
             value={reference.name}
             onChange={(e) =>
               setReference({ ...reference, name: e.target.value })
@@ -96,7 +95,6 @@ function App() {
               setReference({ ...reference, link: e.target.value })
             }
           />
-
           <Button type="primary" onClick={addReference}>
             Submit
           </Button>
@@ -104,12 +102,16 @@ function App() {
         <Divider />
       </div>
 
-      
       <div className="flex flex-col w-3/4 p-4 bg-gray-50">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <Typography.Title level={5}>Generated RST</Typography.Title>
-            <pre className="p-2 bg-white border rounded">{rstDocument.join("\n")}</pre>
+            <TextArea
+              rows={20}
+              className="p-2 bg-white border rounded"
+              value={rstDocument}
+              onChange={handleEditableRstChange}
+            />
           </div>
           <Button
             type="primary"
@@ -122,38 +124,8 @@ function App() {
             Download
           </Button>
         </div>
-
-
-      
+      </div>
     </div>
-    </div>
-
-    // <div>
-    // <ToolBar />
-    // {/* <h1>Sphinx RST Generator</h1> */}
-    /* <div>
-        <h2>Add Title</h2>
-        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <button onClick={addTitle}>Add Title</button>
-      </div> */
-
-    //   <div>
-    //     <h2>Add Content</h2>
-    //     <textarea value={content} onChange={(e) => setContent(e.target.value)}></textarea>
-    //     <button onClick={addContent}>Add Content</button>
-    //   </div>
-    //   <div>
-    //     <h2>Add Reference</h2>
-    //     <input type="text" placeholder="Reference Name" value={reference.name} onChange={(e) => setReference({ ...reference, name: e.target.value })} />
-    //     <input type="text" placeholder="Reference Link" value={reference.link} onChange={(e) => setReference({ ...reference, link: e.target.value })} />
-    //     <button onClick={addReference}>Add Reference</button>
-    //   </div>
-    //   <div>
-    //     <h2>Generated RST</h2>
-    //     <pre>{rstDocument.join('\n')}</pre>
-    //   </div>
-    //   <button onClick={generateRst}>Generate RST</button>
-    // </div>
   );
 }
 
