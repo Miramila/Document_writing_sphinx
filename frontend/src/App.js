@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axiosInstance from "./axiosInstance";
 import { Button, Divider, Input, Space, Typography } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
@@ -9,26 +9,39 @@ function App() {
   const [content, setContent] = useState("");
   const [reference, setReference] = useState({ name: "", link: "" });
   const [rstDocument, setRstDocument] = useState("");
+  const textAreaRef = useRef(null);
 
   const handleEditableRstChange = (e) => {
     setRstDocument(e.target.value);
   };
 
+  const insertAtCursor = (text) => {
+    const textArea = textAreaRef.current.resizableTextArea.textArea;
+    const startPos = textArea.selectionStart;
+    const endPos = textArea.selectionEnd;
+    const newValue = rstDocument.substring(0, startPos) + text + rstDocument.substring(endPos, rstDocument.length);
+    setRstDocument(newValue);
+    setTimeout(() => {
+      textArea.selectionStart = textArea.selectionEnd = startPos + text.length;
+      textArea.focus();
+    }, 0);
+  };
+
   const addTitle = () => {
     const rstTitle = `${title}\n${"=".repeat(title.length)}\n`;
-    setRstDocument(prev => prev + rstTitle);
+    insertAtCursor(rstTitle);
     setTitle("");
   };
 
   const addContent = () => {
     const rstContent = `${content}\n`;
-    setRstDocument(prev => prev + rstContent);
+    insertAtCursor(rstContent);
     setContent("");
   };
 
   const addReference = () => {
     const rstReference = `.. _${reference.name}: ${reference.link}\n`;
-    setRstDocument(prev => prev + rstReference);
+    insertAtCursor(rstReference);
     setReference({ name: "", link: "" });
   };
 
@@ -107,6 +120,7 @@ function App() {
           <div className="flex-1">
             <Typography.Title level={5}>Generated RST</Typography.Title>
             <TextArea
+              ref={textAreaRef}
               rows={20}
               className="p-2 bg-white border rounded"
               value={rstDocument}
@@ -130,3 +144,4 @@ function App() {
 }
 
 export default App;
+
