@@ -1,5 +1,6 @@
 .App {
-  text-align: center;
+  display: flex;
+  height: 100vh; /* Full height */
 }
 
 .App-logo {
@@ -26,6 +27,20 @@
 
 .App-link {
   color: #61dafb;
+}
+
+.sidebar {
+  width: 256px; /* Fixed width for the sidebar */
+  height: 100vh; /* Full height */
+  padding-top: 20px;
+  border-right: 1px solid #e2e8f0;
+  background-color: #f7fafc;
+}
+
+.main-content {
+  flex-grow: 1; /* Take up the remaining space */
+  padding: 1rem;
+  background-color: #f7fafc;
 }
 
 @keyframes App-logo-spin {
