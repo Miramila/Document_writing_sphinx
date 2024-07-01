@@ -15,27 +15,44 @@ if not os.path.exists(GENERATED_FILES_DIR):
 def serve():
     return send_from_directory(app.static_folder, 'index.html')
 
-@app.route('/add-title', methods=['POST'])
-def add_title():
+@app.route('/format', methods=['POST'])
+def format_text():
     data = request.json
-    title = data['title']
-    rst_title = f"{title}\n{'=' * len(title)}\n"
-    return jsonify({'rst': rst_title})
+    text = data['text']
+    format_type = data['format_type']
 
-@app.route('/add-content', methods=['POST'])
-def add_content():
-    data = request.json
-    content = data['content']
-    rst_content = f"{content}\n"
-    return jsonify({'rst': rst_content})
+    if format_type == 'title':
+        formatted_text = f"{text}\n{'=' * len(text)}\n"
+    elif format_type == 'bold':
+        formatted_text = f"**{text}**"
+    elif format_type == 'italic':
+        formatted_text = f"*{text}*"
+    else:
+        formatted_text = text
 
-@app.route('/add-reference', methods=['POST'])
-def add_reference():
-    data = request.json
-    ref_name = data['ref_name']
-    ref_link = data['ref_link']
-    rst_ref = f".. _{ref_name}: {ref_link}\n"
-    return jsonify({'rst': rst_ref})
+    return jsonify({'formatted_text': formatted_text})
+
+# @app.route('/add-title', methods=['POST'])
+# def add_title():
+#     data = request.json
+#     title = data['title']
+#     rst_title = f"{title}\n{'=' * len(title)}\n"
+#     return jsonify({'rst': rst_title})
+
+# @app.route('/add-content', methods=['POST'])
+# def add_content():
+#     data = request.json
+#     content = data['content']
+#     rst_content = f"{content}\n"
+#     return jsonify({'rst': rst_content})
+
+# @app.route('/add-reference', methods=['POST'])
+# def add_reference():
+#     data = request.json
+#     ref_name = data['ref_name']
+#     ref_link = data['ref_link']
+#     rst_ref = f".. _{ref_name}: {ref_link}\n"
+#     return jsonify({'rst': rst_ref})
 
 @app.route('/generate-rst', methods=['POST'])
 def generate_rst():
