@@ -1,10 +1,10 @@
 import React from 'react';
-import { Menu } from 'antd';
+import { Menu, Button } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
 
-const Sidebar = ({ formatSelectedText }) => {
+const Sidebar = ({ formatSelectedText, showModal }) => {
   return (
     <Menu
       style={{ width: 256, height: '100vh' }}
@@ -18,6 +18,7 @@ const Sidebar = ({ formatSelectedText }) => {
           <Menu.Item key="1" onClick={() => formatSelectedText("title")}>标题 Title</Menu.Item>
           <Menu.Item key="2" onClick={() => formatSelectedText("bold")}>加粗 Bold</Menu.Item>
           <Menu.Item key="3" onClick={() => formatSelectedText("italic")}>斜体 Italic</Menu.Item>
+          <Menu.Item key="4" onClick={showModal}>引用 Reference</Menu.Item>
           {/* <Menu.Item key="2" >行内标记 Inline markup</Menu.Item>
           <Menu.Item key="3">源代码 Source Code</Menu.Item>
           <Menu.Item key="4">表格 Tables</Menu.Item>

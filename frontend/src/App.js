@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import axiosInstance from "./axiosInstance";
-import { Button, Input, Typography } from "antd";
+import { Button, Input, Typography, Modal, Form } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
@@ -8,6 +8,8 @@ import "./App.css";
 function App() {
   const { TextArea } = Input;
   const [rstDocument, setRstDocument] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
   const textAreaRef = useRef(null);
 
   const handleEditableRstChange = (e) => {
@@ -59,9 +61,32 @@ function App() {
     }
   };
 
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    form.validateFields()
+      .then(values => {
+        form.resetFields();
+        const { ref_name, ref_link } = values;
+        const reference = `.. _${ref_name}: ${ref_link}\n`;
+        insertAtCursor(reference);
+        setIsModalVisible(false);
+      })
+      .catch(info => {
+        console.log('Validate Failed:', info);
+      });
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+
   return (
     <div className="flex h-screen">
-      <Sidebar formatSelectedText={formatSelectedText} />
+      <Sidebar formatSelectedText={formatSelectedText} showModal={showModal}/>
       <div className="flex flex-col w-full p-4 bg-gray-50">
         <div className="flex justify-between items-start">
           <div className="flex-1">
@@ -86,6 +111,24 @@ function App() {
           </Button>
         </div>
       </div>
+      <Modal title="Insert Reference" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+        <Form form={form} layout="vertical" name="form_in_modal">
+          <Form.Item
+            name="ref_name"
+            label="Reference Name"
+            rules={[{ required: true, message: 'Please input the reference name!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="ref_link"
+            label="Reference Link"
+            rules={[{ required: true, message: 'Please input the reference link!' }]}
+          >
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
