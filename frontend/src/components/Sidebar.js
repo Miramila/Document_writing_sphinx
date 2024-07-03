@@ -22,9 +22,15 @@ const Sidebar = ({ formatSelectedText, showModal }) => {
         </SubMenu>
         
         <SubMenu key='sub3' title="rst_directive">
-          <Menu.Item key="sub3-1" onClick={() => showModal("note")}>短段落 Note</Menu.Item>
-          <Menu.Item key="sub3-2" onClick={() => showModal("warning")}>短段落 Warning</Menu.Item>
-          <Menu.Item key="sub3-3" onClick={() => showModal("version")}>短段落 Version</Menu.Item>
+          <Menu.Item key="sub3-0" onClick={() => showModal("toctree")}>目录 Toctree</Menu.Item>
+          <Menu.Item key="sub3-01" onClick={() => showModal("codeblock")}>代码块 Code-Block</Menu.Item>
+          <Menu.Item key="sub3-1" onClick={() => showModal("note")}>注意 Note</Menu.Item>
+          <Menu.Item key="sub3-2" onClick={() => showModal("warning")}>警告 Warning</Menu.Item>
+          <Menu.Item key="sub3-02" onClick={() => showModal("image")}>Image</Menu.Item>
+          {/* <Menu.Item key="sub3-03" onClick={() => showModal("figure")}>Figure</Menu.Item> */}
+          <Menu.Item key="sub3-03" onClick={() => showModal("math")}>Math</Menu.Item>
+          <Menu.Item key="sub3-04" onClick={() => showModal("csv-table")}>csv-table</Menu.Item>
+          {/* <Menu.Item key="sub3-3" onClick={() => showModal("version")}>短段落 Version</Menu.Item> */}
         </SubMenu>
         
         <Menu.Item key="8">sphinx-needs_directives</Menu.Item>
