@@ -9,6 +9,7 @@ function App() {
   const { TextArea } = Input;
   const [rstDocument, setRstDocument] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalType, setModalType] = useState("");
   const [form] = Form.useForm();
   const textAreaRef = useRef(null);
 
@@ -61,7 +62,8 @@ function App() {
     }
   };
 
-  const showModal = () => {
+  const showModal = (type) => {
+    setModalType(type);
     setIsModalVisible(true);
   };
 
@@ -69,9 +71,22 @@ function App() {
     form.validateFields()
       .then(values => {
         form.resetFields();
-        const { ref_name, ref_link } = values;
-        const reference = `.. _${ref_name}: ${ref_link}\n`;
-        insertAtCursor(reference);
+        let formattedText = "";
+        switch (modalType) {
+          case "reference":
+            const { ref_name, ref_link } = values;
+            formattedText = `.. _${ref_name}: ${ref_link}\n`;
+            break;
+          case "version":
+            const { version, description } = values;
+            formattedText = `.. versionadded:: ${version}\n    ${description}\n`;
+            break;
+          default:
+            const { directive_text } = values;
+            formattedText = `.. ${modalType}::\n    ${directive_text}\n`;
+            break;
+        }
+        insertAtCursor(formattedText);
         setIsModalVisible(false);
       })
       .catch(info => {
@@ -83,10 +98,62 @@ function App() {
     setIsModalVisible(false);
   };
 
+  const getModalContent = () => {
+    switch (modalType) {
+      case "reference":
+        return (
+          <>
+            <Form.Item
+              name="ref_name"
+              label="Reference Name"
+              rules={[{ required: true, message: 'Please input the reference name!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="ref_link"
+              label="Reference Link"
+              rules={[{ required: true, message: 'Please input the reference link!' }]}
+            >
+              <Input />
+            </Form.Item>
+          </>
+        );
+      case "version":
+        return (
+          <>
+            <Form.Item
+              name="version"
+              label="Version"
+              rules={[{ required: true, message: 'Please input the version!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="description"
+              label="Description"
+              rules={[{ required: true, message: 'Please input the description!' }]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+          </>
+        );
+      default:
+        return (
+          <Form.Item
+            name="directive_text"
+            label="Directive Text"
+            rules={[{ required: true, message: 'Please input the directive text!' }]}
+          >
+            <Input.TextArea />
+          </Form.Item>
+        );
+    }
+  };
 
   return (
     <div className="flex h-screen">
-      <Sidebar formatSelectedText={formatSelectedText} showModal={showModal}/>
+      <Sidebar formatSelectedText={formatSelectedText} showModal={showModal} />
       <div className="flex flex-col w-full p-4 bg-gray-50">
         <div className="flex justify-between items-start">
           <div className="flex-1">
@@ -111,22 +178,10 @@ function App() {
           </Button>
         </div>
       </div>
-      <Modal title="Insert Reference" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+
+      <Modal title="Insert Content" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
         <Form form={form} layout="vertical" name="form_in_modal">
-          <Form.Item
-            name="ref_name"
-            label="Reference Name"
-            rules={[{ required: true, message: 'Please input the reference name!' }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="ref_link"
-            label="Reference Link"
-            rules={[{ required: true, message: 'Please input the reference link!' }]}
-          >
-            <Input />
-          </Form.Item>
+          {getModalContent()}
         </Form>
       </Modal>
     </div>
@@ -134,5 +189,3 @@ function App() {
 }
 
 export default App;
-
-
