@@ -22,9 +22,9 @@ const Sidebar = ({ formatSelectedText, showModal }) => {
         </SubMenu>
         
         <SubMenu key='sub3' title="rst_directive">
-          <Menu.Item key="sub3-1" onClick={() => showModal("note")}>短段落 Note</Menu.Item>
-          <Menu.Item key="sub3-2" onClick={() => showModal("warning")}>短段落 Warning</Menu.Item>
-          <Menu.Item key="sub3-3" onClick={() => showModal("version")}>短段落 Version</Menu.Item>
+          <Menu.Item key="sub3-1" onClick={() => showModal("note")}>注意 Note</Menu.Item>
+          <Menu.Item key="sub3-2" onClick={() => showModal("warning")}>警告 Warning</Menu.Item>
+          <Menu.Item key="sub3-3" onClick={() => showModal("version")}>版本 Version</Menu.Item>
         </SubMenu>
         
         <Menu.Item key="8">sphinx-needs_directives</Menu.Item>
