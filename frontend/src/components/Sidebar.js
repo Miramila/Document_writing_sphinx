@@ -30,7 +30,6 @@ const Sidebar = ({ formatSelectedText, showModal }) => {
           {/* <Menu.Item key="sub3-03" onClick={() => showModal("figure")}>Figure</Menu.Item> */}
           <Menu.Item key="sub3-03" onClick={() => showModal("math")}>Math</Menu.Item>
           <Menu.Item key="sub3-04" onClick={() => showModal("csv-table")}>csv-table</Menu.Item>
-          {/* <Menu.Item key="sub3-3" onClick={() => showModal("version")}>短段落 Version</Menu.Item> */}
         </SubMenu>
         
         <Menu.Item key="8">sphinx-needs_directives</Menu.Item>
