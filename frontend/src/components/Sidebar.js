@@ -32,7 +32,15 @@ const Sidebar = ({ formatSelectedText, showModal }) => {
           <Menu.Item key="sub3-8" onClick={() => showModal("csv-table")}>CSV-Table</Menu.Item>
         </SubMenu>
         
-        <Menu.Item key="8">sphinx-needs_directives</Menu.Item>
+        <SubMenu key='sub4' title="sphinx-needs_directives">
+          <Menu.Item key="sub4-1" onClick={() => showModal("needbar")}>needbar</Menu.Item>
+          <Menu.Item key="sub4-2" onClick={() => showModal("needlist")}>needlist</Menu.Item>
+          <Menu.Item key="sub4-3" onClick={() => showModal("needtable")}>needtable</Menu.Item>
+          <Menu.Item key="sub4-4" onClick={() => showModal("needflow")}>needflow</Menu.Item>
+          <Menu.Item key="sub4-5" onClick={() => showModal("needextract")}>needextract</Menu.Item>
+          <Menu.Item key="sub4-6" onClick={() => showModal("needextend")}>needextend</Menu.Item>
+        </SubMenu>
+
         <Menu.Item key="9">customer_directives</Menu.Item>
       </SubMenu>
     </Menu>

@@ -125,12 +125,12 @@ function App() {
 
           case "note":
             const { note_text } = values;
-            formattedText = `.. note::\n    ${directive_text}\n`;
+            formattedText = `.. note::\n    ${note_text}\n`;
             break;
 
           case "warning":
             const { warning_text } = values;
-            formattedText = `.. warning::\n    ${directive_text}\n`;
+            formattedText = `.. warning::\n    ${warning_text}\n`;
             break;
 
           case "image":
@@ -143,22 +143,101 @@ function App() {
             formattedText = `.. figure:: ${figure_url}\n`;
             break;
 
-            case "math":
-              const {equation} = values;
-              formattedText = `.. math::\n`;
-              formattedText += "\n" +
-              equation
-                .split("\n")
-                .map((doc) => `   ${doc.trim()}\n`)
-                .join("\n") +
-              "\n";
-              break;
-            
-              case "csv-table":
-                const { table_title, table_header, table_content } = values;
-                formattedText = `.. csv-table:: ${table_title}\n:header: ${table_header}\n\n${table_content.split('\n').map(row => row.trim()).join('\n')}\n`;
-                break;
+          case "math":
+            const {equation} = values;
+            formattedText = `.. math::\n`;
+            formattedText += "\n" +
+            equation
+              .split("\n")
+              .map((doc) => `   ${doc.trim()}\n`)
+              .join("\n") +
+            "\n";
+            break;
 
+          case "csv-table":
+            const { table_title, table_header, table_content } = values;
+            formattedText = `.. csv-table:: ${table_title}\n:header: ${table_header}\n\n${table_content.split('\n').map(row => row.trim()).join('\n')}\n`;
+            break;
+
+          case "needbar":
+            const { bar_values, bar_title} = values;
+            formattedText = `.. needbar::\n`;
+            formattedText += `:title: ${bar_title}\n`
+            formattedText += "\n" +
+            bar_values
+              .split("\n")
+              .map((val) => `   ${val.trim()}`)
+              .join("\n") +
+            "\n";
+            break;
+          case "needlist":
+          const { tags, status } = values;
+          formattedText = `.. needlist::\n`;
+          if (tags) {
+            formattedText += `    :tags: ${tags.split(",").map(tag => tag.trim()).join("; ")}\n`;
+          }
+          if (status) {
+            formattedText += `    :status: ${status.split(",").map(s => s.trim()).join("; ")}\n`;
+          }
+            break;
+
+          case "needtable":
+            const { table_name, table_columns, table_tags, table_status} = values;
+            formattedText = `.. needtable:: ${table_name}\n`;
+            if (table_columns) {
+              formattedText += `    :columns: ${table_columns.split(",").map(col => col.trim()).join("; ")}\n`;
+            }
+            if (table_tags) {
+              formattedText += `    :tags: ${table_tags.split(",").map(tag => tag.trim()).join("; ")}\n`;
+            }
+            if (table_status) {
+              formattedText += `    :status: ${table_status.split(",").map(s => s.trim()).join("; ")}\n`;
+            }
+            break;
+
+          case "needflow":
+            const { flow_name, flow_filter, flow_tags, flow_linkTypes } = values;
+            formattedText = `.. needflow:: ${flow_name}\n`;
+            if (flow_filter) {
+              formattedText += `    :filter: ${flow_filter}\n`;
+            }
+            if (flow_tags) {
+              formattedText += `    :tags: ${flow_tags.split(",").map(tag => tag.trim()).join("; ")}\n`;
+            }
+            if (flow_linkTypes) {
+              formattedText += `    :link_types: ${flow_linkTypes.split(",").map(lt => lt.trim()).join("; ")}\n`;
+            }
+            formattedText += `    :show_link_names:\n`;
+            break;
+
+          case "needextract":
+            const { filter: extract_filter, extract_layout, extract_style } = values;
+            formattedText = `.. needextract::\n`;
+            if (extract_filter) {
+              formattedText += `    :filter: ${extract_filter}\n`;
+            }
+            if (extract_layout) {
+              formattedText += `    :layout: ${extract_layout}\n`;
+            }
+            if (extract_style) {
+              formattedText += `    :style: ${extract_style}\n`;
+            }
+            break;
+
+          case "needextend":
+            const { needextend_filterString, needextend_option, needextend_addOption, needextend_removeOption } = values;
+            formattedText = `.. needextend:: ${needextend_filterString}\n`;
+            if (needextend_option) {
+              formattedText += `    :option: ${needextend_option}\n`;
+            }
+            if (needextend_addOption) {
+              formattedText += `    :+option: ${needextend_addOption}\n`;
+            }
+            if (needextend_removeOption) {
+              formattedText += `    :-option: ${needextend_removeOption}\n`;
+            }
+            break;
+          
           default:
             const { directive_text } = values;
             formattedText = `.. ${modalType}::\n    ${directive_text}\n`;
@@ -255,7 +334,7 @@ function App() {
         return (
           <>
             <Form.Item
-              name="description"
+              name="note_text"
               label="Description"
               rules={[
                 { required: true, message: "Please input the description!" },
@@ -270,12 +349,11 @@ function App() {
         return (
           <>
             <Form.Item
-              name="description"
+              name="warning_text"
               label="Description"
               rules={[
                 { required: true, message: "Please input the description!" },
               ]}
-              
             >
               <Input.TextArea />
             </Form.Item>
@@ -286,10 +364,10 @@ function App() {
         return (
           <>
             <Form.Item
-              name="image"
-              label="image_url"
+              name="image_url"
+              label="Image URL"
               rules={[
-                { required: true, message: "Please input the description!" },
+                { required: true, message: "Please input the image URL!" },
               ]}
             >
               <Input />
@@ -301,57 +379,246 @@ function App() {
         return (
           <>
             <Form.Item
-              name="figure"
-              label="figure_url"
+              name="figure_url"
+              label="Figure URL"
               rules={[
-                { required: true, message: "Please input the description!" },
+                { required: true, message: "Please input the figure URL!" },
               ]}
             >
               <Input />
             </Form.Item>
           </>
         );
-      
-        case "math":
-          return(
+
+      case "math":
+        return (
+          <Form.Item
+            name="equation"
+            label="Math Equation (one per line)"
+            rules={[
+              { required: true, message: "Please input the math equation!" },
+            ]}
+          >
+            <Input.TextArea />
+          </Form.Item>
+        );
+
+      case "csv-table":
+        return (
+          <>
             <Form.Item
-              name="equation"
-              label="Math Equation(one per line)"
-              rules={[
-                { required: true, message: "Please input the math equation!" },
-              ]}
+              name="table_title"
+              label="Table Title"
+              rules={[{ required: true, message: 'Please input the table title!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="table_header"
+              label="Table Header (comma-separated)"
+              rules={[{ required: true, message: 'Please input the table header!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="table_content"
+              label="Table Content (comma-separated, one row per line)"
+              rules={[{ required: true, message: 'Please input the table content!' }]}
             >
               <Input.TextArea />
             </Form.Item>
-          )
-  
-          case "csv-table":
-            return (
-              <>
-                <Form.Item
-                  name="table_title"
-                  label="Table Title"
-                  rules={[{ required: true, message: 'Please input the table title!' }]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  name="table_header"
-                  label="Table Header (comma-separated)"
-                  rules={[{ required: true, message: 'Please input the table header!' }]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  name="table_content"
-                  label="Table Content (comma-separated, one row per line)"
-                  rules={[{ required: true, message: 'Please input the table content!' }]}
-                >
-                  <Input.TextArea />
-                </Form.Item>
-              </>
-            );
+          </>
+        );
 
+      case "needbar":
+        return (
+          <>
+          <Form.Item
+            name="bar_title"
+            label="Bar title"
+            rules={[
+              { required: false, message: "Please input the bar header!" },
+            ]}
+          >
+            <Input.TextArea />
+            </Form.Item>
+
+          <Form.Item
+            name="bar_values"
+            label="Bar Values (one per line)"
+            rules={[
+              { required: true, message: "Please input the bar values!" },
+            ]}
+          >
+            <Input.TextArea />
+            </Form.Item>
+          </>
+        );
+      case "needlist":
+      return (
+        <>
+          <Form.Item
+            name="tags"
+            label="Tags (comma-separated)"
+            rules={[
+              { required: false, message: "Please input the tags!" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="status"
+            label="Status (comma-separated)"
+            rules={[
+              { required: false, message: "Please input the status!" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          {/* Add more form items here for other need options as needed */}
+        </>
+      );
+      
+      case "needtable":
+        return (
+          <>
+            <Form.Item
+              name="table_name"
+              label="Table Name"
+              rules={[{ required: false, message: "Please input the table name!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="table_columns"
+              label="Columns (comma-separated)"
+              rules={[{ required: false, message: "Please input the columns!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="table_tags"
+              label="Tags (comma-separated)"
+              rules={[{ required: false, message: "Please input the tags!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="table_status"
+              label="Status (comma-separated)"
+              rules={[{ required: false, message: "Please input the status!" }]}
+            >
+              <Input />
+            </Form.Item>
+            {/* Add more form items here for other need options as needed */}
+          </>
+        );
+
+      
+      case "needflow":
+        return (
+          <>
+            <Form.Item
+              name="flow_name"
+              label="Flowchart Name"
+              rules={[{ required: false, message: "Please input the flowchart name!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="flow_filter"
+              label="Filter"
+              rules={[{ required: false, message: "Please input the filter!" }]}
+            >
+              <TextArea rows={3} />
+            </Form.Item>
+            <Form.Item
+              name="flow_tags"
+              label="Tags (comma-separated)"
+              rules={[{ required: false, message: "Please input the tags!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="flow_linkTypes"
+              label="Link Types (comma-separated)"
+              rules={[{ required: false, message: "Please input the link types!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="show_link_names"
+              label="Show Link Names"
+              rules={[{ required: false, message: "Please input the link names!" }]}
+            >
+              <Checkbox defaultChecked />
+            </Form.Item>
+          </>
+        );
+
+      
+      case "needextract":
+        return (
+          <>
+            <Form.Item
+              name="extract_filter"
+              label="Filter"
+              rules={[{ required: true, message: "Please input the filter!" }]}
+            >
+              <TextArea rows={3} />
+            </Form.Item>
+            <Form.Item
+              name="extract_layout"
+              label="Layout"
+              rules={[{ required: false, message: "Please input the layout!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="extract_style"
+              label="Style"
+              rules={[{ required: false, message: "Please input the style!" }]}
+            >
+              <Input />
+            </Form.Item>
+          </>
+        );
+
+      
+      case "needextend":
+        return (
+          <>
+            <Form.Item
+              name="needextend_filterString"
+              label="Filter String"
+              rules={[{ required: true, message: "Please input the filter string!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="needextend_option"
+              label="Option"
+              rules={[{ required: false, message: "Please input the option!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="needextend_addOption"
+              label="Add Option"
+              rules={[{ required: false, message: "Please input the add option!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="needextend_removeOption"
+              label="Remove Option"
+              rules={[{ required: false, message: "Please input the remove option!" }]}
+            >
+              <Input />
+            </Form.Item>
+          </>
+        );
+      
       default:
         return (
           <Form.Item
