@@ -3,12 +3,11 @@ import axiosInstance from "./axiosInstance";
 import {
   Button,
   Input,
-  InputNumber,
   Typography,
   Modal,
   Form,
   Checkbox,
-  Select,
+  InputNumber,
 } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import Sidebar from "./components/Sidebar";
@@ -95,16 +94,9 @@ function App() {
             const { ref_name, ref_link } = values;
             formattedText = `.. _${ref_name}: ${ref_link}\n`;
             break;
-          case "version":
-            const { version, description } = values;
-            formattedText = `.. versionadded:: ${version}\n    ${description}\n`;
-            break;
           case "toctree":
             const { maxdepth, caption, numbered, documents } = values;
             formattedText = `.. toctree::\n   :maxdepth: ${maxdepth}\n`;
-            if (caption) {
-              formattedText += `   :caption: ${caption}\n`;
-            }
             if (numbered) {
               formattedText += "   :numbered:\n";
             }
@@ -117,32 +109,10 @@ function App() {
                 .join("\n") +
               "\n";
             break;
+
           case "codeblock":
-            const {
-              language,
-              lineno_start,
-              emphasize_lines,
-              caption_code,
-              name,
-              linenos,
-              code,
-            } = values;
+            const { language, code } = values;
             formattedText = `.. code-block:: ${language}\n`;
-            if (lineno_start) {
-              formattedText += `   :lineno-start: ${lineno_start}\n`;
-            }
-            if (emphasize_lines) {
-              formattedText += `   :emphasize-lines: ${emphasize_lines}\n`;
-            }
-            if (caption_code) {
-              formattedText += `   :caption: ${caption_code}\n`;
-            }
-            if (name) {
-              formattedText += `   :name: ${name}\n`;
-            }
-            if (linenos) {
-              formattedText += `   :linenos:\n`;
-            }
             formattedText +=
               "\n" +
               code
@@ -151,44 +121,44 @@ function App() {
                 .join("\n") +
               "\n";
             break;
+
+          case "note":
+            const { note_text } = values;
+            formattedText = `.. note::\n    ${directive_text}\n`;
+            break;
+
+          case "warning":
+            const { warning_text } = values;
+            formattedText = `.. warning::\n    ${directive_text}\n`;
+            break;
+
           case "image":
-            const {
-              image_path,
-              align,
-              alt,
-              height,
-              width,
-              loading,
-              scale,
-              target,
-            } = values;
-            formattedText = `.. image:: ${image_path}\n`;
-            if (align) formattedText += `   :align: ${align}\n`;
-            if (alt) formattedText += `   :alt: ${alt}\n`;
-            if (height) formattedText += `   :height: ${height}\n`;
-            if (width) formattedText += `   :width: ${width}\n`;
-            if (loading) formattedText += `   :loading: ${loading}\n`;
-            if (scale) formattedText += `   :scale: ${scale}\n`;
-            if (target) formattedText += `   :target: ${target}\n`;
+            const { image_url } = values;
+            formattedText = `.. image:: ${image_url}\n`;
             break;
 
-          case "math":
-            const {equation} = values;
-            formattedText = `.. math::\n`;
-            formattedText += "\n" +
-            equation
-              .split("\n")
-              .map((doc) => `   ${doc.trim()}\n`)
-              .join("\n") +
-            "\n";
+          case "figure":
+            const { figure_url } = values;
+            formattedText = `.. figure:: ${figure_url}\n`;
             break;
-          
-            case "csv-table":
-              const { table_title, table_header, table_content } = values;
-              formattedText = `.. csv-table:: ${table_title}\n:header: ${table_header}\n\n${table_content.split('\n').map(row => row.trim()).join('\n')}\n`;
+
+            case "math":
+              const {equation} = values;
+              formattedText = `.. math::\n`;
+              formattedText += "\n" +
+              equation
+                .split("\n")
+                .map((doc) => `   ${doc.trim()}\n`)
+                .join("\n") +
+              "\n";
               break;
+            
+              case "csv-table":
+                const { table_title, table_header, table_content } = values;
+                formattedText = `.. csv-table:: ${table_title}\n:header: ${table_header}\n\n${table_content.split('\n').map(row => row.trim()).join('\n')}\n`;
+                break;
 
-              default:
+          default:
             const { directive_text } = values;
             formattedText = `.. ${modalType}::\n    ${directive_text}\n`;
             break;
@@ -230,27 +200,6 @@ function App() {
             </Form.Item>
           </>
         );
-      case "version":
-        return (
-          <>
-            <Form.Item
-              name="version"
-              label="Version"
-              rules={[{ required: true, message: "Please input the version!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="description"
-              label="Description"
-              rules={[
-                { required: true, message: "Please input the description!" },
-              ]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-          </>
-        );
       case "toctree":
         return (
           <>
@@ -261,16 +210,7 @@ function App() {
                 { required: true, message: "Please input the max depth!" },
               ]}
             >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="caption"
-              label="Caption"
-              rules={[
-                { required: false, message: "Please input the caption!" },
-              ]}
-            >
-              <Input />
+              <InputNumber />
             </Form.Item>
             <Form.Item name="numbered" valuePropName="checked">
               <Checkbox>Numbered</Checkbox>
@@ -301,59 +241,6 @@ function App() {
             </Form.Item>
 
             <Form.Item
-              name="lineno_start"
-              label="Lineno Start "
-              rules={[
-                { required: false, message: "Please input the start line!" },
-              ]}
-            >
-              <InputNumber />
-            </Form.Item>
-
-            <Form.Item
-              name="emphasize_lines"
-              label="Emphasize Lines (comma separated numbers)"
-              rules={[
-                {
-                  required: false,
-                  message: "Please input the emphasize line!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="caption_code"
-              label="Caption"
-              rules={[
-                {
-                  required: false,
-                  message: "Please input the emphasize line!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="name"
-              label="Name"
-              rules={[
-                {
-                  required: false,
-                  message: "Please input the emphasize line!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item name="linenos" valuePropName="checked">
-              <Checkbox>Linenos</Checkbox>
-            </Form.Item>
-
-            <Form.Item
               name="code"
               label="Code (one per line)"
               rules={[{ required: true, message: "Please input the code!" }]}
@@ -363,119 +250,106 @@ function App() {
           </>
         );
 
+      case "note":
+        return (
+          <>
+            <Form.Item
+              name="description"
+              label="Description"
+              rules={[
+                { required: true, message: "Please input the description!" },
+              ]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+          </>
+        );
+
+      case "warning":
+        return (
+          <>
+            <Form.Item
+              name="description"
+              label="Description"
+              rules={[
+                { required: true, message: "Please input the description!" },
+              ]}
+              
+            >
+              <Input.TextArea />
+            </Form.Item>
+          </>
+        );
+
       case "image":
         return (
           <>
             <Form.Item
-              name="image_path"
-              label="Image Path"
+              name="image"
+              label="image_url"
               rules={[
-                { required: true, message: "Please input the image path!" },
+                { required: true, message: "Please input the description!" },
               ]}
             >
               <Input />
             </Form.Item>
-            <Form.Item name="align" label="Align" rules={[{ required: false }]}>
-              <Select placeholder="Select align option">
-                <Option value="top">Top</Option>
-                <Option value="middle">Middle</Option>
-                <Option value="bottom">Bottom</Option>
-                <Option value="left">Left</Option>
-                <Option value="center">Center</Option>
-                <Option value="right">Right</Option>
-              </Select>
-            </Form.Item>
+          </>
+        );
+
+      case "figure":
+        return (
+          <>
             <Form.Item
-              name="alt"
-              label="Alt Text"
-              rules={[{ required: false }]}
+              name="figure"
+              label="figure_url"
+              rules={[
+                { required: true, message: "Please input the description!" },
+              ]}
             >
               <Input />
-            </Form.Item>
-            <Form.Item
-              name="height"
-              label="Height"
-              rules={[{ required: false }]}
-            >
-              <InputNumber formatter={(value) => `${value}px`} />
-            </Form.Item>
-
-            <Form.Item
-              name="weight"
-              label="Weight"
-              rules={[{ required: false }]}
-            >
-              <InputNumber formatter={(value) => `${value}px`} />
-            </Form.Item>
-
-            <Form.Item
-              name="loading"
-              label="Loading"
-              rules={[{ required: false }]}
-            >
-              <Select placeholder="Select loading option">
-                <Option value="embed">Embed</Option>
-                <Option value="link">Link</Option>
-                <Option value="lazy">Lazy</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item name="scale" label="Scale" rules={[{ required: false }]}>
-              <InputNumber
-                defaultValue={100}
-                min={0}
-                max={100}
-                formatter={(value) => `${value}%`}
-              />
-            </Form.Item>
-            <Form.Item
-              name="target"
-              label="Target"
-              rules={[{ required: false }]}
-            >
-              <Input.TextArea placeholder="The argument may be a URI or a reference name with underscore suffix (e.g. `a name`_)." />
             </Form.Item>
           </>
         );
       
-      case "math":
-        return(
-          <Form.Item
-            name="equation"
-            label="Math Equation(one per line)"
-            rules={[
-              { required: true, message: "Please input the math equation!" },
-            ]}
-          >
-            <Input.TextArea />
-          </Form.Item>
-        )
-
-        case "csv-table":
-          return (
-            <>
-              <Form.Item
-                name="table_title"
-                label="Table Title"
-                rules={[{ required: true, message: 'Please input the table title!' }]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                name="table_header"
-                label="Table Header (comma-separated)"
-                rules={[{ required: true, message: 'Please input the table header!' }]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item
-                name="table_content"
-                label="Table Content (comma-separated, one row per line)"
-                rules={[{ required: true, message: 'Please input the table content!' }]}
-              >
-                <Input.TextArea />
-              </Form.Item>
-            </>
-          );
+        case "math":
+          return(
+            <Form.Item
+              name="equation"
+              label="Math Equation(one per line)"
+              rules={[
+                { required: true, message: "Please input the math equation!" },
+              ]}
+            >
+              <Input.TextArea />
+            </Form.Item>
+          )
+  
+          case "csv-table":
+            return (
+              <>
+                <Form.Item
+                  name="table_title"
+                  label="Table Title"
+                  rules={[{ required: true, message: 'Please input the table title!' }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="table_header"
+                  label="Table Header (comma-separated)"
+                  rules={[{ required: true, message: 'Please input the table header!' }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="table_content"
+                  label="Table Content (comma-separated, one row per line)"
+                  rules={[{ required: true, message: 'Please input the table content!' }]}
+                >
+                  <Input.TextArea />
+                </Form.Item>
+              </>
+            );
 
       default:
         return (
