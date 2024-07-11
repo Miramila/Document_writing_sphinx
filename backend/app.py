@@ -20,17 +20,29 @@ def format_text():
     data = request.json
     text = data.get('text', '')
     format_type = data.get('format_type', '')
-
+#TODO: table/标题分级/菜单栏/内部标签改modal
     if format_type == 'title':
         formatted_text = f"{text}\n{'=' * len(text)}\n"
     elif format_type == 'bold':
         formatted_text = f"**{text}**"
     elif format_type == 'italic':
         formatted_text = f"*{text}*"
-    elif format_type == 'reference':
+    elif format_type == 'external_links':
         ref_name = data.get('ref_name', '')
         ref_link = data.get('ref_link', '')
         formatted_text = f".. _{ref_name}: {ref_link}\n"
+    elif format_type == 'internal_links':
+        formatted_text = f":ref:`{text}`" # 内部标签需要限制唯一
+    elif format_type == 'paragraphs':
+        formatted_text = f"{text}\n\n" # add a new line after each paragraph
+    elif format_type == 'subscript':
+        formatted_text = f"\ :sub:` {text}`\ "
+    elif format_type == 'superscript':
+        formatted_text = f"\ :sup:` {text}`\ "
+    elif format_type == 'reference':
+        formatted_text = f":literal:`{text}`"
+    elif format_type == 'title-reference':
+        formatted_text = f"*《{text}》*"   
     elif format_type == 'version':
         version = data.get('version', '')
         description = data.get('description', '')

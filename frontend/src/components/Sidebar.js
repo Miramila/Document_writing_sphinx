@@ -15,10 +15,13 @@ const Sidebar = ({ formatSelectedText, showModal }) => {
     >
       <SubMenu key="sub1" icon={<MailOutlined />} title="rst_syntax_templates">
         <SubMenu key="sub2" title="rst_role">
-          <Menu.Item key="1" onClick={() => formatSelectedText("title")}>标题 Title</Menu.Item>
-          <Menu.Item key="2" onClick={() => formatSelectedText("bold")}>加粗 Bold</Menu.Item>
-          <Menu.Item key="3" onClick={() => formatSelectedText("italic")}>斜体 Italic</Menu.Item>
-          <Menu.Item key="4" onClick={() => showModal("reference")}>引用 Reference</Menu.Item>
+          <Menu.Item key="sub2-1" onClick={() => formatSelectedText("title")}>标题 Title</Menu.Item>
+          <Menu.Item key="sub2-2" onClick={() => formatSelectedText("bold")}>加粗 Bold</Menu.Item>
+          <Menu.Item key="sub2-3" onClick={() => formatSelectedText("italic")}>斜体 Italic</Menu.Item>
+          <Menu.Item key="sub2-4" onClick={() => showModal("external_links")}>外部引用 External links</Menu.Item>
+          <Menu.Item key="sub2-4" onClick={() => showModal("internal_links")}>内部引用 Internal links</Menu.Item>
+          <Menu.Item key="sub2-6" onClick={() => formatSelectedText("paragraphs")}>段落 Paragraphs</Menu.Item>
+          <Menu.Item key="sub2-7" onClick={() => showModal("grid_table")}>表格 Grid table</Menu.Item>
         </SubMenu>
         
         <SubMenu key='sub3' title="rst_directive">

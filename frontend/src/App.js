@@ -22,6 +22,12 @@ function App() {
   const [modalType, setModalType] = useState("");
   const [form] = Form.useForm();
   const textAreaRef = useRef(null);
+  const [gridTable, setGridTable] = useState([]);
+  const [gridRows, setGridRows] = useState(0);
+  const [gridColumns, setGridColumns] = useState(0);
+  // const [simpleTable, setSimpleTable] = useState([]);
+  // const [simpleRows, setSimpleRows] = useState(0);
+  // const [simpleColumns, setSimpleColumns] = useState(0);
 
   const handleEditableRstChange = (e) => {
     setRstDocument(e.target.value);
@@ -96,7 +102,7 @@ function App() {
             formattedText = `.. _${ref_name}: ${ref_link}\n`;
             break;
           case "toctree":
-            const { maxdepth, caption, numbered, documents } = values;
+            const { maxdepth, numbered, documents } = values;
             formattedText = `.. toctree::\n   :maxdepth: ${maxdepth}\n`;
             if (numbered) {
               formattedText += "   :numbered:\n";
@@ -144,74 +150,115 @@ function App() {
             break;
 
           case "math":
-            const {equation} = values;
+            const { equation } = values;
             formattedText = `.. math::\n`;
-            formattedText += "\n" +
-            equation
-              .split("\n")
-              .map((doc) => `   ${doc.trim()}\n`)
-              .join("\n") +
-            "\n";
+            formattedText +=
+              "\n" +
+              equation
+                .split("\n")
+                .map((doc) => `   ${doc.trim()}\n`)
+                .join("\n") +
+              "\n";
             break;
 
           case "csv-table":
             const { table_title, table_header, table_content } = values;
-            formattedText = `.. csv-table:: ${table_title}\n:header: ${table_header}\n\n${table_content.split('\n').map(row => row.trim()).join('\n')}\n`;
+            formattedText = `.. csv-table:: ${table_title}\n:header: ${table_header}\n\n${table_content
+              .split("\n")
+              .map((row) => row.trim())
+              .join("\n")}\n`;
             break;
 
           case "needbar":
-            const { bar_values, bar_title} = values;
+            const { bar_values, bar_title } = values;
             formattedText = `.. needbar::\n`;
-            formattedText += `:title: ${bar_title}\n`
-            formattedText += "\n" +
-            bar_values
-              .split("\n")
-              .map((val) => `   ${val.trim()}`)
-              .join("\n") +
-            "\n";
+            formattedText += `:title: ${bar_title}\n`;
+            formattedText +=
+              "\n" +
+              bar_values
+                .split("\n")
+                .map((val) => `   ${val.trim()}`)
+                .join("\n") +
+              "\n";
             break;
+
           case "needlist":
-          const { tags, status } = values;
-          formattedText = `.. needlist::\n`;
-          if (tags) {
-            formattedText += `    :tags: ${tags.split(",").map(tag => tag.trim()).join("; ")}\n`;
-          }
-          if (status) {
-            formattedText += `    :status: ${status.split(",").map(s => s.trim()).join("; ")}\n`;
-          }
+            const { tags, status } = values;
+            formattedText = `.. needlist::\n`;
+            if (tags) {
+              formattedText += `    :tags: ${tags
+                .split(",")
+                .map((tag) => tag.trim())
+                .join("; ")}\n`;
+            }
+            if (status) {
+              formattedText += `    :status: ${status
+                .split(",")
+                .map((s) => s.trim())
+                .join("; ")}\n`;
+            }
             break;
 
           case "needtable":
-            const { table_name, table_columns, table_tags, table_status} = values;
+            const {
+              table_name,
+              table_columns,
+              table_tags,
+              table_status,
+            } = values;
             formattedText = `.. needtable:: ${table_name}\n`;
             if (table_columns) {
-              formattedText += `    :columns: ${table_columns.split(",").map(col => col.trim()).join("; ")}\n`;
+              formattedText += `    :columns: ${table_columns
+                .split(",")
+                .map((col) => col.trim())
+                .join("; ")}\n`;
             }
             if (table_tags) {
-              formattedText += `    :tags: ${table_tags.split(",").map(tag => tag.trim()).join("; ")}\n`;
+              formattedText += `    :tags: ${table_tags
+                .split(",")
+                .map((tag) => tag.trim())
+                .join("; ")}\n`;
             }
             if (table_status) {
-              formattedText += `    :status: ${table_status.split(",").map(s => s.trim()).join("; ")}\n`;
+              formattedText += `    :status: ${table_status
+                .split(",")
+                .map((s) => s.trim())
+                .join("; ")}\n`;
             }
             break;
 
           case "needflow":
-            const { flow_name, flow_filter, flow_tags, flow_linkTypes } = values;
+            const {
+              flow_name,
+              flow_filter,
+              flow_tags,
+              flow_linkTypes,
+            } = values;
             formattedText = `.. needflow:: ${flow_name}\n`;
             if (flow_filter) {
               formattedText += `    :filter: ${flow_filter}\n`;
             }
             if (flow_tags) {
-              formattedText += `    :tags: ${flow_tags.split(",").map(tag => tag.trim()).join("; ")}\n`;
+              formattedText += `    :tags: ${flow_tags
+                .split(",")
+                .map((tag) => tag.trim())
+                .join("; ")}\n`;
             }
             if (flow_linkTypes) {
-              formattedText += `    :link_types: ${flow_linkTypes.split(",").map(lt => lt.trim()).join("; ")}\n`;
+              formattedText += `    :link_types: ${flow_linkTypes
+                .split(",")
+                .map((lt) => lt.trim())
+                .join("; ")}\n`;
             }
             formattedText += `    :show_link_names:\n`;
             break;
 
           case "needextract":
-            const { filter: extract_filter, extract_layout, extract_style } = values;
+            const {
+              extract_filter,
+              extract_layout,
+              extract_style,
+            } = values;
             formattedText = `.. needextract::\n`;
             if (extract_filter) {
               formattedText += `    :filter: ${extract_filter}\n`;
@@ -225,7 +272,12 @@ function App() {
             break;
 
           case "needextend":
-            const { needextend_filterString, needextend_option, needextend_addOption, needextend_removeOption } = values;
+            const {
+              needextend_filterString,
+              needextend_option,
+              needextend_addOption,
+              needextend_removeOption,
+            } = values;
             formattedText = `.. needextend:: ${needextend_filterString}\n`;
             if (needextend_option) {
               formattedText += `    :option: ${needextend_option}\n`;
@@ -237,7 +289,34 @@ function App() {
               formattedText += `    :-option: ${needextend_removeOption}\n`;
             }
             break;
-          
+
+          case "grid_table":
+            const { rows, columns } = values;
+            let table = [];
+            for (let i = 0; i < rows; i++) {
+              let row = [];
+              for (let j = 0; j < columns; j++) {
+                row.push("");
+              }
+              table.push(row);
+            }
+            setGridTable(table);
+            setGridRows(rows);
+            setGridColumns(columns);
+            setIsModalVisible(false);
+            setTimeout(() => {
+              setIsModalVisible(true);
+              setModalType("grid_table_edit");
+            }, 0);
+            return;
+
+          case "grid_table_edit":
+            const updatedTable = values.table.map((row) =>
+              row.map((cell) => cell || "")
+            );
+            formattedText = createGridTable(updatedTable);
+            break;
+
           default:
             const { directive_text } = values;
             formattedText = `.. ${modalType}::\n    ${directive_text}\n`;
@@ -254,6 +333,56 @@ function App() {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
+  const createGridTable = (table) => {
+    let columnWidths = table[0].map(
+      (_, colIndex) => Math.max(...table.map((row) => row[colIndex].length)) + 2
+    );
+  
+    const headerSeparator = columnWidths.map((width) => "=".repeat(width)).join("+");
+    const rowSeparator = columnWidths.map((width) => "-".repeat(width)).join("+");
+  
+    let result = `+${rowSeparator}+\n`;
+    result += `|` + table[0]
+      .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
+      .join("|") + `|\n`;
+    result += `+${headerSeparator}+\n`;
+  
+    for (let i = 1; i < table.length; i++) {
+      result += `|` + table[i]
+        .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
+        .join("|") + `|\n`;
+      result += `+${rowSeparator}+\n`;
+    }
+  
+    return result;
+  };
+
+  // const createSimpleTable = (table) => {
+  //   let columnWidths = table[0].map(
+  //     (_, colIndex) => Math.max(...table.map((row) => row[colIndex].length)) + 2
+  //   );
+  
+  //   const headerSeparator = columnWidths.map((width) => "=".repeat(width)).join("+");
+  //   const rowSeparator = columnWidths.map((width) => "-".repeat(width)).join("+");
+  
+  //   let result = `+${rowSeparator}+\n`;
+  //   result += `|` + table[0]
+  //     .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
+  //     .join("|") + `|\n`;
+  //   result += `+${headerSeparator}+\n`;
+  
+  //   for (let i = 1; i < table.length; i++) {
+  //     result += `|` + table[i]
+  //       .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
+  //       .join("|") + `|\n`;
+  //     result += `+${rowSeparator}+\n`;
+  //   }
+  
+  //   return result;
+  // };
+  
+  
 
   const getModalContent = () => {
     switch (modalType) {
@@ -409,21 +538,21 @@ function App() {
             <Form.Item
               name="table_title"
               label="Table Title"
-              rules={[{ required: true, message: 'Please input the table title!' }]}
+              rules={[{ required: true, message: "Please input the table title!" }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="table_header"
               label="Table Header (comma-separated)"
-              rules={[{ required: true, message: 'Please input the table header!' }]}
+              rules={[{ required: true, message: "Please input the table header!" }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="table_content"
               label="Table Content (comma-separated, one row per line)"
-              rules={[{ required: true, message: 'Please input the table content!' }]}
+              rules={[{ required: true, message: "Please input the table content!" }]}
             >
               <Input.TextArea />
             </Form.Item>
@@ -433,52 +562,44 @@ function App() {
       case "needbar":
         return (
           <>
-          <Form.Item
-            name="bar_title"
-            label="Bar title"
-            rules={[
-              { required: false, message: "Please input the bar header!" },
-            ]}
-          >
-            <Input.TextArea />
+            <Form.Item
+              name="bar_title"
+              label="Bar title"
+              rules={[{ required: false, message: "Please input the bar header!" }]}
+            >
+              <Input.TextArea />
             </Form.Item>
 
-          <Form.Item
-            name="bar_values"
-            label="Bar Values (one per line)"
-            rules={[
-              { required: true, message: "Please input the bar values!" },
-            ]}
-          >
-            <Input.TextArea />
+            <Form.Item
+              name="bar_values"
+              label="Bar Values (one per line)"
+              rules={[{ required: true, message: "Please input the bar values!" }]}
+            >
+              <Input.TextArea />
             </Form.Item>
           </>
         );
+
       case "needlist":
-      return (
-        <>
-          <Form.Item
-            name="tags"
-            label="Tags (comma-separated)"
-            rules={[
-              { required: false, message: "Please input the tags!" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="status"
-            label="Status (comma-separated)"
-            rules={[
-              { required: false, message: "Please input the status!" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          {/* Add more form items here for other need options as needed */}
-        </>
-      );
-      
+        return (
+          <>
+            <Form.Item
+              name="tags"
+              label="Tags (comma-separated)"
+              rules={[{ required: false, message: "Please input the tags!" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="status"
+              label="Status (comma-separated)"
+              rules={[{ required: false, message: "Please input the status!" }]}
+            >
+              <Input />
+            </Form.Item>
+          </>
+        );
+
       case "needtable":
         return (
           <>
@@ -510,11 +631,9 @@ function App() {
             >
               <Input />
             </Form.Item>
-            {/* Add more form items here for other need options as needed */}
           </>
         );
 
-      
       case "needflow":
         return (
           <>
@@ -556,7 +675,6 @@ function App() {
           </>
         );
 
-      
       case "needextract":
         return (
           <>
@@ -584,7 +702,6 @@ function App() {
           </>
         );
 
-      
       case "needextend":
         return (
           <>
@@ -618,7 +735,124 @@ function App() {
             </Form.Item>
           </>
         );
+
+      case "grid_table":
+        return (
+          <>
+            <Form.Item
+              name="rows"
+              label="Number of Rows"
+              rules={[
+                { required: true, message: "Please input the number of rows!" },
+              ]}
+            >
+              <InputNumber min={1} />
+            </Form.Item>
+            <Form.Item
+              name="columns"
+              label="Number of Columns"
+              rules={[
+                { required: true, message: "Please input the number of columns!" },
+              ]}
+            >
+              <InputNumber min={1} />
+            </Form.Item>
+          </>
+        );
+
+      case "grid_table_edit":
+          return (
+            <Form.List name="table" initialValue={gridTable}>
+              {(fields, { add, remove }) => (
+                <>
+                  <Form.Item label="Header">
+                    <Input.Group compact>
+                      {Array.from({ length: gridColumns }).map((_, colIndex) => (
+                        <Form.Item
+                          key={colIndex}
+                          name={[fields[0].name, colIndex]}
+                          style={{
+                            display: "inline-block",
+                            width: `calc(100% / ${gridColumns})`,
+                            margin: 0,
+                          }}
+                        >
+                          <Input placeholder={`Header ${colIndex + 1}`} />
+                        </Form.Item>
+                      ))}
+                    </Input.Group>
+                  </Form.Item>
+                  {fields.slice(1).map((field, rowIndex) => (
+                    <Form.Item key={rowIndex + 1} label={`Row ${rowIndex + 1}`}>
+                      <Input.Group compact>
+                        {Array.from({ length: gridColumns }).map((_, colIndex) => (
+                          <Form.Item
+                            key={colIndex}
+                            name={[field.name, colIndex]}
+                            style={{
+                              display: "inline-block",
+                              width: `calc(100% / ${gridColumns})`,
+                              margin: 0,
+                            }}
+                          >
+                            <Input placeholder={`Cell ${rowIndex + 1}-${colIndex + 1}`} />
+                          </Form.Item>
+                        ))}
+                      </Input.Group>
+                    </Form.Item>
+                  ))}
+                </>
+              )}
+            </Form.List>
+          );
       
+      // case "simple_table_edit":
+      //       return (
+      //         <Form.List name="table" initialValue={simpleTable}>
+      //           {(fields, { add, remove }) => (
+      //             <>
+      //               <Form.Item label="Header">
+      //                 <Input.Group compact>
+      //                   {Array.from({ length: simpleColumns }).map((_, colIndex) => (
+      //                     <Form.Item
+      //                       key={colIndex}
+      //                       name={[fields[0].name, colIndex]}
+      //                       style={{
+      //                         display: "inline-block",
+      //                         width: `calc(100% / ${simpleColumns})`,
+      //                         margin: 0,
+      //                       }}
+      //                     >
+      //                       <Input placeholder={`Header ${colIndex + 1}`} />
+      //                     </Form.Item>
+      //                   ))}
+      //                 </Input.Group>
+      //               </Form.Item>
+      //               {fields.slice(1).map((field, rowIndex) => (
+      //                 <Form.Item key={rowIndex + 1} label={`Row ${rowIndex + 1}`}>
+      //                   <Input.Group compact>
+      //                     {Array.from({ length: simpleColumns }).map((_, colIndex) => (
+      //                       <Form.Item
+      //                         key={colIndex}
+      //                         name={[field.name, colIndex]}
+      //                         style={{
+      //                           display: "inline-block",
+      //                           width: `calc(100% / ${gridColumns})`,
+      //                           margin: 0,
+      //                         }}
+      //                       >
+      //                         <Input placeholder={`Cell ${rowIndex + 1}-${colIndex + 1}`} />
+      //                       </Form.Item>
+      //                     ))}
+      //                   </Input.Group>
+      //                 </Form.Item>
+      //               ))}
+      //             </>
+      //           )}
+      //         </Form.List>
+      //       );
+        
+
       default:
         return (
           <Form.Item
@@ -677,3 +911,6 @@ function App() {
 }
 
 export default App;
+
+
+
