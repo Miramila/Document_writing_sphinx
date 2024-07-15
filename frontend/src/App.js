@@ -48,6 +48,25 @@ function App() {
     }, 0);
   };
 
+  const buildSphinxDocs = async () => {
+    try {
+      const response = await axiosInstance.post("/build-sphinx", 
+      { content_list: rstDocument.split("\n") },
+      { responseType: "blob" });
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = 'sphinx_build.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Error building Sphinx documentation:", error);
+      alert("An error occurred while building Sphinx documentation.");
+    }
+  };
+
   const formatSelectedText = async (formatType) => {
     const textArea = textAreaRef.current.resizableTextArea.textArea;
     const startPos = textArea.selectionStart;
@@ -892,6 +911,16 @@ function App() {
             className="ml-4"
           >
             Download
+          </Button>
+          <Button
+            type="primary"
+            shape="round"
+            icon={<DownloadOutlined />}
+            size={"large"}
+            onClick={buildSphinxDocs}
+            className="ml-4"
+          >
+            Build Sphinx Docs
           </Button>
         </div>
       </div>

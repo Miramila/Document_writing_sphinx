@@ -19,7 +19,7 @@ const Sidebar = ({ formatSelectedText, showModal }) => {
           <Menu.Item key="sub2-2" onClick={() => formatSelectedText("bold")}>加粗 Bold</Menu.Item>
           <Menu.Item key="sub2-3" onClick={() => formatSelectedText("italic")}>斜体 Italic</Menu.Item>
           <Menu.Item key="sub2-4" onClick={() => showModal("external_links")}>外部引用 External links</Menu.Item>
-          <Menu.Item key="sub2-4" onClick={() => showModal("internal_links")}>内部引用 Internal links</Menu.Item>
+          <Menu.Item key="sub2-5" onClick={() => showModal("internal_links")}>内部引用 Internal links</Menu.Item>
           <Menu.Item key="sub2-6" onClick={() => formatSelectedText("paragraphs")}>段落 Paragraphs</Menu.Item>
           <Menu.Item key="sub2-7" onClick={() => showModal("grid_table")}>表格 Grid table</Menu.Item>
         </SubMenu>

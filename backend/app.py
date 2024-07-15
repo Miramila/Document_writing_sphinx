@@ -2,7 +2,10 @@ import io
 import os
 from flask import Flask, request, jsonify, send_from_directory, send_file, make_response
 from flask_cors import CORS
+import shutil
 from docutils.core import publish_string
+import subprocess
+import tempfile
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
@@ -130,6 +133,102 @@ def generate_rst():
         return response
     else:
         return jsonify({'error': 'Missing content_list'}), 400
+
+#TODO: figure out how to put find the sphinx source
+@app.route('/build-sphinx', methods=['POST'])
+def build_sphinx():
+    data = request.json
+    content_list = data.get('content_list')
+    
+    if not content_list:
+        return jsonify({'error': 'Missing content_list'}), 400
+
+    full_rst = '\n'.join(content_list)
+    
+    try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            docs_dir = os.path.join(temp_dir, 'docs')
+            build_dir = os.path.join(temp_dir, 'build')
+            
+            # Create necessary directories
+            os.makedirs(docs_dir)
+            
+            # Write the rst content to the temporary index.rst file
+            with open(os.path.join(docs_dir, 'index.rst'), 'w', encoding='utf-8') as f:
+                f.write(full_rst)
+            
+            # Write a basic conf.py if not provided
+            conf_py_content = """
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
+
+project = 'Your Project'
+author = 'Your Name'
+release = '0.1'
+
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
+]
+
+templates_path = ['_templates']
+exclude_patterns = []
+
+html_theme = 'alabaster'
+html_static_path = ['_static']
+"""
+            with open(os.path.join(docs_dir, 'conf.py'), 'w', encoding='utf-8') as f:
+                f.write(conf_py_content)
+            
+            # Write a basic Makefile for Unix-like systems
+            makefile_content = """
+# Minimal makefile for Sphinx documentation
+
+SPHINXOPTS    =
+SPHINXBUILD   = sphinx-build
+SOURCEDIR     = .
+BUILDDIR      = _build
+
+.PHONY: help Makefile
+
+help:
+\t@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
+
+html:
+\t@$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
+\t@echo
+\t@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+"""
+            with open(os.path.join(docs_dir, 'Makefile'), 'w', encoding='utf-8') as f:
+                f.write(makefile_content)
+            
+            # Write a basic make.bat for Windows systems
+            make_bat_content = """
+@ECHO OFF
+
+REM Minimal make.bat for Sphinx documentation
+
+set SPHINXBUILD=sphinx-build
+set SOURCEDIR=.
+set BUILDDIR=_build
+
+%SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
+if errorlevel 1 exit /b 1
+"""
+            with open(os.path.join(docs_dir, 'make.bat'), 'w', encoding='utf-8') as f:
+                f.write(make_bat_content)
+            
+            # Run the Sphinx build process
+            subprocess.run(['sphinx-build', '-b', 'html', docs_dir, build_dir], check=True)
+            zip_path = os.path.join(temp_dir, 'sphinx_build.zip')
+            shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', build_dir)
+        
+            # Send the zip file back to the client
+            return send_file(zip_path, as_attachment=True, download_name='sphinx_build.zip')
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"message": "An error occurred while building Sphinx documentation.", "error": str(e)}), 500
 
 @app.route('/<path:path>')
 def static_proxy(path):
