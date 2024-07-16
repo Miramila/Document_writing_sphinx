@@ -159,21 +159,30 @@ def build_sphinx():
             
             # Write a basic conf.py if not provided
             conf_py_content = """
-import os
-import sys
-sys.path.insert(0, os.path.abspath('.'))
+# Configuration file for the Sphinx documentation builder.
+#
+# For the full list of built-in configuration values, see the documentation:
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-project = 'Your Project'
-author = 'Your Name'
-release = '0.1'
+# -- Project information -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-]
+project = 'test'
+copyright = '2024, Bonnie'
+author = 'Bonnie'
+
+# -- General configuration ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
+extensions = []
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+
+
+
+# -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
@@ -181,43 +190,72 @@ html_static_path = ['_static']
             with open(os.path.join(docs_dir, 'conf.py'), 'w', encoding='utf-8') as f:
                 f.write(conf_py_content)
             
-            # Write a basic Makefile for Unix-like systems
-            makefile_content = """
-# Minimal makefile for Sphinx documentation
+#             # Write a basic Makefile for Unix-like systems
+#             makefile_content = """
+# # Minimal makefile for Sphinx documentation
+# #
 
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-SOURCEDIR     = .
-BUILDDIR      = _build
+# # You can set these variables from the command line, and also
+# # from the environment for the first two.
+# SPHINXOPTS    ?=
+# SPHINXBUILD   ?= sphinx-build
+# SOURCEDIR     = .
+# BUILDDIR      = _build
 
-.PHONY: help Makefile
+# # Put it first so that "make" without argument is like "make help".
+# help:
+# 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-help:
-\t@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
+# .PHONY: help Makefile
 
-html:
-\t@$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS)
-\t@echo
-\t@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
-"""
-            with open(os.path.join(docs_dir, 'Makefile'), 'w', encoding='utf-8') as f:
-                f.write(makefile_content)
+# # Catch-all target: route all unknown targets to Sphinx using the new
+# # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+# %: Makefile
+# 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+# """
+#             with open(os.path.join(docs_dir, 'Makefile'), 'w', encoding='utf-8') as f:
+#                 f.write(makefile_content)
             
-            # Write a basic make.bat for Windows systems
-            make_bat_content = """
-@ECHO OFF
+#             # Write a basic make.bat for Windows systems
+#             make_bat_content = """
+# @ECHO OFF
 
-REM Minimal make.bat for Sphinx documentation
+# pushd %~dp0
 
-set SPHINXBUILD=sphinx-build
-set SOURCEDIR=.
-set BUILDDIR=_build
+# REM Command file for Sphinx documentation
 
-%SPHINXBUILD% -M html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
-if errorlevel 1 exit /b 1
-"""
-            with open(os.path.join(docs_dir, 'make.bat'), 'w', encoding='utf-8') as f:
-                f.write(make_bat_content)
+# if "%SPHINXBUILD%" == "" (
+# 	set SPHINXBUILD=sphinx-build
+# )
+# set SOURCEDIR=.
+# set BUILDDIR=_build
+
+# %SPHINXBUILD% >NUL 2>NUL
+# if errorlevel 9009 (
+# 	echo.
+# 	echo.The 'sphinx-build' command was not found. Make sure you have Sphinx
+# 	echo.installed, then set the SPHINXBUILD environment variable to point
+# 	echo.to the full path of the 'sphinx-build' executable. Alternatively you
+# 	echo.may add the Sphinx directory to PATH.
+# 	echo.
+# 	echo.If you don't have Sphinx installed, grab it from
+# 	echo.https://www.sphinx-doc.org/
+# 	exit /b 1
+# )
+
+# if "%1" == "" goto help
+
+# %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+# goto end
+
+# :help
+# %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+
+# :end
+# popd
+# """
+#             with open(os.path.join(docs_dir, 'make.bat'), 'w', encoding='utf-8') as f:
+#                 f.write(make_bat_content)
             
             # Run the Sphinx build process
             subprocess.run(['sphinx-build', '-b', 'html', docs_dir, build_dir], check=True)
