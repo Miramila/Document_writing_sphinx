@@ -8,6 +8,7 @@ import {
   Modal,
   Form,
   Checkbox,
+  Select,
 } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import Sidebar from "./components/Sidebar";
@@ -32,7 +33,6 @@ function App() {
   const [csvHeader, setCsvHeader] = useState([]);
   const [csvWidths, setCsvWidths] = useState([]);
 
-
   const handleEditableRstChange = (e) => {
     setRstDocument(e.target.value);
   };
@@ -53,17 +53,14 @@ function App() {
   };
 
   const buildSphinxDocs = async () => {
-    try {
-      const response = await axiosInstance.post(
-        "/build-sphinx",
-        { content_list: rstDocument.split("\n") },
-        { responseType: "blob" }
-      );
-      const blob = new Blob([response.data], { type: "application/zip" });
+      const response = await axiosInstance.post("/build-sphinx", 
+      { content_list: rstDocument.split("\n") },
+      { responseType: "blob" });
+      const blob = new Blob([response.data], { type: 'application/zip' });
       const downloadUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = downloadUrl;
-      a.download = "sphinx_build.zip";
+      a.download = 'sphinx_build.zip';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(downloadUrl);
@@ -241,8 +238,12 @@ function App() {
             break;
 
           case "needtable":
-            const { table_name, table_columns, table_tags, table_status } =
-              values;
+            const {
+              table_name,
+              table_columns,
+              table_tags,
+              table_status,
+            } = values;
             formattedText = `.. needtable:: ${table_name}\n`;
             if (table_columns) {
               formattedText += `    :columns: ${table_columns
@@ -265,8 +266,12 @@ function App() {
             break;
 
           case "needflow":
-            const { flow_name, flow_filter, flow_tags, flow_linkTypes } =
-              values;
+            const {
+              flow_name,
+              flow_filter,
+              flow_tags,
+              flow_linkTypes,
+            } = values;
             formattedText = `.. needflow:: ${flow_name}\n`;
             if (flow_filter) {
               formattedText += `    :filter: ${flow_filter}\n`;
@@ -287,7 +292,11 @@ function App() {
             break;
 
           case "needextract":
-            const { extract_filter, extract_layout, extract_style } = values;
+            const {
+              extract_filter,
+              extract_layout,
+              extract_style,
+            } = values;
             formattedText = `.. needextract::\n`;
             if (extract_filter) {
               formattedText += `    :filter: ${extract_filter}\n`;
@@ -460,6 +469,25 @@ function App() {
     }
   };
   
+  
+//     const headerSeparator = columnWidths.map((width) => "=".repeat(width)).join("+");
+//     const rowSeparator = columnWidths.map((width) => "-".repeat(width)).join("+");
+  
+//     let result = `+${rowSeparator}+\n`;
+//     result += `|` + table[0]
+//       .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
+//       .join("|") + `|\n`;
+//     result += `+${headerSeparator}+\n`;
+  
+//     for (let i = 1; i < table.length; i++) {
+//       result += `|` + table[i]
+//         .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
+//         .join("|") + `|\n`;
+//       result += `+${rowSeparator}+\n`;
+//     }
+  
+//     return result;
+//   };
 
   // const createSimpleTable = (table) => {
   //   let columnWidths = table[0].map(
@@ -468,20 +496,18 @@ function App() {
 
   //   const headerSeparator = columnWidths.map((width) => "=".repeat(width)).join("+");
   //   const rowSeparator = columnWidths.map((width) => "-".repeat(width)).join("+");
-
+  
   //   let result = `+${rowSeparator}+\n`;
   //   result += `|` + table[0]
   //     .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
   //     .join("|") + `|\n`;
   //   result += `+${headerSeparator}+\n`;
-
   //   for (let i = 1; i < table.length; i++) {
   //     result += `|` + table[i]
   //       .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
   //       .join("|") + `|\n`;
   //     result += `+${rowSeparator}+\n`;
   //   }
-
   //   return result;
   // };
 
@@ -733,9 +759,7 @@ function App() {
             <Form.Item
               name="bar_title"
               label="Bar title"
-              rules={[
-                { required: false, message: "Please input the bar header!" },
-              ]}
+              rules={[{ required: false, message: "Please input the bar header!" }]}
             >
               <Input.TextArea />
             </Form.Item>
@@ -743,9 +767,7 @@ function App() {
             <Form.Item
               name="bar_values"
               label="Bar Values (one per line)"
-              rules={[
-                { required: true, message: "Please input the bar values!" },
-              ]}
+              rules={[{ required: true, message: "Please input the bar values!" }]}
             >
               <Input.TextArea />
             </Form.Item>
@@ -778,18 +800,14 @@ function App() {
             <Form.Item
               name="table_name"
               label="Table Name"
-              rules={[
-                { required: false, message: "Please input the table name!" },
-              ]}
+              rules={[{ required: false, message: "Please input the table name!" }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="table_columns"
               label="Columns (comma-separated)"
-              rules={[
-                { required: false, message: "Please input the columns!" },
-              ]}
+              rules={[{ required: false, message: "Please input the columns!" }]}
             >
               <Input />
             </Form.Item>
@@ -816,12 +834,7 @@ function App() {
             <Form.Item
               name="flow_name"
               label="Flowchart Name"
-              rules={[
-                {
-                  required: false,
-                  message: "Please input the flowchart name!",
-                },
-              ]}
+              rules={[{ required: false, message: "Please input the flowchart name!" }]}
             >
               <Input />
             </Form.Item>
@@ -842,18 +855,14 @@ function App() {
             <Form.Item
               name="flow_linkTypes"
               label="Link Types (comma-separated)"
-              rules={[
-                { required: false, message: "Please input the link types!" },
-              ]}
+              rules={[{ required: false, message: "Please input the link types!" }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="show_link_names"
               label="Show Link Names"
-              rules={[
-                { required: false, message: "Please input the link names!" },
-              ]}
+              rules={[{ required: false, message: "Please input the link names!" }]}
             >
               <Checkbox defaultChecked />
             </Form.Item>
@@ -893,9 +902,7 @@ function App() {
             <Form.Item
               name="needextend_filterString"
               label="Filter String"
-              rules={[
-                { required: true, message: "Please input the filter string!" },
-              ]}
+              rules={[{ required: true, message: "Please input the filter string!" }]}
             >
               <Input />
             </Form.Item>
@@ -909,18 +916,14 @@ function App() {
             <Form.Item
               name="needextend_addOption"
               label="Add Option"
-              rules={[
-                { required: false, message: "Please input the add option!" },
-              ]}
+              rules={[{ required: false, message: "Please input the add option!" }]}
             >
               <Input />
             </Form.Item>
             <Form.Item
               name="needextend_removeOption"
               label="Remove Option"
-              rules={[
-                { required: false, message: "Please input the remove option!" },
-              ]}
+              rules={[{ required: false, message: "Please input the remove option!" }]}
             >
               <Input />
             </Form.Item>
@@ -943,10 +946,7 @@ function App() {
               name="columns"
               label="Number of Columns"
               rules={[
-                {
-                  required: true,
-                  message: "Please input the number of columns!",
-                },
+                { required: true, message: "Please input the number of columns!" },
               ]}
             >
               <InputNumber min={1} />
@@ -1005,7 +1005,7 @@ function App() {
               </Form.List>
             </>
           );
-    
+      
 
       // case "simple_table_edit":
       //       return (
