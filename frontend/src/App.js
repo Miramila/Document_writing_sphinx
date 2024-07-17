@@ -53,6 +53,7 @@ function App() {
   };
 
   const buildSphinxDocs = async () => {
+    try{
       const response = await axiosInstance.post("/build-sphinx", 
       { content_list: rstDocument.split("\n") },
       { responseType: "blob" });
@@ -1083,29 +1084,30 @@ function App() {
               onChange={handleEditableRstChange}
             />
           </div>
-          <Button
-            type="primary"
-            shape="round"
-            icon={<DownloadOutlined />}
-            size={"large"}
-            onClick={generateRst}
-            className="ml-4"
-          >
-            Download
-          </Button>
-          <Button
-            type="primary"
-            shape="round"
-            icon={<DownloadOutlined />}
-            size={"large"}
-            onClick={buildSphinxDocs}
-            className="ml-4"
-          >
-            Build Sphinx Docs
-          </Button>
+          <div className="flex flex-col ml-4">
+            <Button
+              type="primary"
+              shape="round"
+              icon={<DownloadOutlined />}
+              size={"large"}
+              onClick={generateRst}
+              className="mb-4"
+            >
+              Download
+            </Button>
+            <Button
+              type="primary"
+              shape="round"
+              icon={<DownloadOutlined />}
+              size={"large"}
+              onClick={buildSphinxDocs}
+            >
+              Build Sphinx Docs
+            </Button>
+          </div>
         </div>
       </div>
-
+  
       <Modal
         title="Insert Content"
         visible={isModalVisible}
@@ -1118,6 +1120,6 @@ function App() {
       </Modal>
     </div>
   );
-}
+}  
 
 export default App;
