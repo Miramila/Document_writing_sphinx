@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: backend-service
 spec:
+  type: NodePort
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 31649
   selector:
     app: backend
-  ports:
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
-  type: NodePort
