@@ -6,6 +6,8 @@ import shutil
 from docutils.core import publish_string
 import subprocess
 import tempfile
+import oss2
+from oss2.credentials import EnvironmentVariableCredentialsProvider
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
@@ -184,78 +186,81 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 """
             with open(os.path.join(docs_dir, 'conf.py'), 'w', encoding='utf-8') as f:
                 f.write(conf_py_content)
             
-#             # Write a basic Makefile for Unix-like systems
-#             makefile_content = """
-# # Minimal makefile for Sphinx documentation
-# #
+            # Write a basic Makefile for Unix-like systems
+            makefile_content = """
+# Minimal makefile for Sphinx documentation
+#
 
-# # You can set these variables from the command line, and also
-# # from the environment for the first two.
-# SPHINXOPTS    ?=
-# SPHINXBUILD   ?= sphinx-build
-# SOURCEDIR     = .
-# BUILDDIR      = _build
+# You can set these variables from the command line, and also
+# from the environment for the first two.
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
+SOURCEDIR     = source
+BUILDDIR      = build
 
-# # Put it first so that "make" without argument is like "make help".
-# help:
-# 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+# Put it first so that "make" without argument is like "make help".
+help:
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-# .PHONY: help Makefile
+.PHONY: help Makefile
 
-# # Catch-all target: route all unknown targets to Sphinx using the new
-# # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-# %: Makefile
-# 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
-# """
-#             with open(os.path.join(docs_dir, 'Makefile'), 'w', encoding='utf-8') as f:
-#                 f.write(makefile_content)
+# Catch-all target: route all unknown targets to Sphinx using the new
+# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+%: Makefile
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+"""
+            with open(os.path.join(docs_dir, 'Makefile'), 'w', encoding='utf-8') as f:
+                f.write(makefile_content)
             
-#             # Write a basic make.bat for Windows systems
-#             make_bat_content = """
-# @ECHO OFF
+            # Write a basic make.bat for Windows systems
+            make_bat_content = """
+@ECHO OFF
 
-# pushd %~dp0
+pushd %~dp0
 
-# REM Command file for Sphinx documentation
+REM Command file for Sphinx documentation
 
-# if "%SPHINXBUILD%" == "" (
-# 	set SPHINXBUILD=sphinx-build
-# )
-# set SOURCEDIR=.
-# set BUILDDIR=_build
+if "%SPHINXBUILD%" == "" (
+	set SPHINXBUILD=sphinx-build
+)
+set SOURCEDIR=source
+set BUILDDIR=build
+set SPHINXOPTS=-w
+set O=error.log
 
-# %SPHINXBUILD% >NUL 2>NUL
-# if errorlevel 9009 (
-# 	echo.
-# 	echo.The 'sphinx-build' command was not found. Make sure you have Sphinx
-# 	echo.installed, then set the SPHINXBUILD environment variable to point
-# 	echo.to the full path of the 'sphinx-build' executable. Alternatively you
-# 	echo.may add the Sphinx directory to PATH.
-# 	echo.
-# 	echo.If you don't have Sphinx installed, grab it from
-# 	echo.https://www.sphinx-doc.org/
-# 	exit /b 1
-# )
+%SPHINXBUILD% >NUL 2>NUL
+if errorlevel 9009 (
+	echo.
+	echo.The 'sphinx-build' command was not found. Make sure you have Sphinx
+	echo.installed, then set the SPHINXBUILD environment variable to point
+	echo.to the full path of the 'sphinx-build' executable. Alternatively you
+	echo.may add the Sphinx directory to PATH.
+	echo.
+	echo.If you don't have Sphinx installed, grab it from
+	echo.https://www.sphinx-doc.org/
+	exit /b 1
+)
 
-# if "%1" == "" goto help
+if "%1" == "" goto help
 
-# %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
-# goto end
+::%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+%SPHINXBUILD% -b %1 %SOURCEDIR% "%BUILDDIR%/html" %SPHINXOPTS% %O%
+goto end
 
-# :help
-# %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+:help
+%SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 
-# :end
-# popd
-# """
-#             with open(os.path.join(docs_dir, 'make.bat'), 'w', encoding='utf-8') as f:
-#                 f.write(make_bat_content)
+:end
+popd
+"""
+            with open(os.path.join(docs_dir, 'make.bat'), 'w', encoding='utf-8') as f:
+                f.write(make_bat_content)
             
             # Run the Sphinx build process
             subprocess.run(['sphinx-build', '-b', 'html', docs_dir, build_dir], check=True)
@@ -267,6 +272,34 @@ html_static_path = ['_static']
 
     except subprocess.CalledProcessError as e:
         return jsonify({"message": "An error occurred while building Sphinx documentation.", "error": str(e)}), 500
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    try:
+        # Get the file from the request
+        file = request.files['file']
+        filename = file.filename
+
+        # Configure OSS2
+        auth = oss2.ProviderAuth(EnvironmentVariableCredentialsProvider())
+        bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', 'sphinx-test')
+
+        # Save the file locally temporarily
+        local_path = f"/tmp/{filename}"
+        file.save(local_path)
+
+        # Upload the file to OSS
+        with open(local_path, 'rb') as fileobj:
+            bucket.put_object(filename, fileobj)
+
+        # Remove the local file after upload
+        os.remove(local_path)
+
+        return jsonify({"message": "File uploaded successfully!"}), 200
+
+    except Exception as e:
+        print(f"Error uploading file: {e}")
+        return jsonify({"message": "An error occurred while uploading the file."}), 500
 
 @app.route('/<path:path>')
 def static_proxy(path):

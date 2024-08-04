@@ -9,6 +9,7 @@ import {
   Form,
   Checkbox,
   Select,
+  message
 } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import Sidebar from "./components/Sidebar";
@@ -65,6 +66,12 @@ function App() {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(downloadUrl);
+
+      Modal.confirm({
+        title: "Upload to Cloud",
+        content: "Do you want to upload the file to the cloud?",
+        onOk: () => uploadToCloud(blob),
+      });
     } catch (error) {
       console.error("Error building Sphinx documentation:", error);
       alert("An error occurred while building Sphinx documentation.");
@@ -107,6 +114,26 @@ function App() {
       console.error("Error generating RST:", error);
     }
   };
+
+  const uploadToCloud = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file, "sphinx_build.zip");
+  
+      // Call the new endpoint
+      await axiosInstance.post("/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      message.success("File uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      message.error("An error occurred while uploading the file.");
+    }
+  };
+  
 
   const showModal = (type) => {
     setModalType(type);
@@ -1070,7 +1097,7 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen relative">
       <Sidebar formatSelectedText={formatSelectedText} showModal={showModal} />
       <div className="flex flex-col w-full p-4 bg-gray-50">
         <div className="flex justify-between items-start">
@@ -1103,6 +1130,16 @@ function App() {
               onClick={buildSphinxDocs}
             >
               Build Sphinx Docs
+            </Button>
+          </div>
+          <div className="absolute bottom-0 left-0 m-4">
+            <Button
+              type="primary"
+              size={"medium"}
+              style={{ backgroundColor: 'transparent', border: '1px solid #1890ff' }}
+              onClick={() => window.location.href = 'http://23.95.227.124:8080/'}
+            >
+              UPP AI Bot
             </Button>
           </div>
         </div>

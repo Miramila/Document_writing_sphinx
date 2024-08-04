@@ -1,3 +1,4 @@
 Flask
 flask-cors
 docutils
+oss2
