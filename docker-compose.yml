@@ -5,10 +5,22 @@ services:
     build: ./backend
     ports:
       - "5000:5000"
+    volumes:
+      - ./backend:/app
+    environment:
+      FLASK_ENV: development
+    networks:
+      - mynetwork
 
   frontend:
     build: ./frontend
     ports:
       - "3000:3000"
-    depends_on:
-      - backend
+    volumes:
+      - ./frontend:/app
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
