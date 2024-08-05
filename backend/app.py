@@ -280,19 +280,19 @@ def upload():
         file = request.files['file']
         filename = file.filename
 
-        # Configure OSS2
-        auth = oss2.ProviderAuth(EnvironmentVariableCredentialsProvider())
+        access_key_id = 'LTAI5tRLdpLSkhtXDuDNzTSx'
+        access_key_secret = 'lTQ6ISovfHzNtyKUplD8WW947T5vGn'
+
+        # notice: to upload successfully, do not use vpn
+        auth = oss2.Auth(access_key_id, access_key_secret)
         bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', 'sphinx-test')
 
-        # Save the file locally temporarily
         local_path = f"/tmp/{filename}"
         file.save(local_path)
 
-        # Upload the file to OSS
         with open(local_path, 'rb') as fileobj:
-            bucket.put_object(filename, fileobj)
+            bucket.put_object(filename, fileobj, headers={'x-oss-forbid-overwrite': 'true'}, progress_callback=None)
 
-        # Remove the local file after upload
         os.remove(local_path)
 
         return jsonify({"message": "File uploaded successfully!"}), 200
