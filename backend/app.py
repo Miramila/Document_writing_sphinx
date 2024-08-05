@@ -8,6 +8,9 @@ import subprocess
 import tempfile
 import oss2
 from oss2.credentials import EnvironmentVariableCredentialsProvider
+import webbrowser
+import pathlib
+import time
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
@@ -148,7 +151,18 @@ def build_sphinx():
     full_rst = '\n'.join(content_list)
     
     try:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
+            parent_dir = pathlib.Path(temp_dir).parent
+            save_html_path = parent_dir / 'save_html'
+            if not save_html_path.exists():
+                save_html_path.mkdir(parents=True, exist_ok=True)
+                print(f"Directory 'save_html' created at: {save_html_path}")
+
+            build_file_path = save_html_path / 'build'
+            if build_file_path.exists():
+                shutil.rmtree(build_file_path)
+                print(f"Deleted file: {build_file_path}")
+
             docs_dir = os.path.join(temp_dir, 'docs')
             build_dir = os.path.join(temp_dir, 'build')
             
@@ -266,10 +280,15 @@ popd
             subprocess.run(['sphinx-build', '-b', 'html', docs_dir, build_dir], check=True)
             zip_path = os.path.join(temp_dir, 'sphinx_build.zip')
             shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', build_dir)
+
+            # html_path = os.path.join(build_dir, 'index.html')
+            shutil.move(build_dir, save_html_path)
+            index_file_path = build_file_path / "index.html"
+            webbrowser.open("file://" + str(index_file_path))
         
             # Send the zip file back to the client
             return send_file(zip_path, as_attachment=True, download_name='sphinx_build.zip')
-
+        
     except subprocess.CalledProcessError as e:
         return jsonify({"message": "An error occurred while building Sphinx documentation.", "error": str(e)}), 500
 
