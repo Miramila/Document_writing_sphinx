@@ -11,6 +11,9 @@ from oss2.credentials import EnvironmentVariableCredentialsProvider
 import webbrowser
 import pathlib
 import time
+import http.server
+import socketserver
+import uuid
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
@@ -18,6 +21,16 @@ CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_cred
 GENERATED_FILES_DIR = "../generated_files"
 if not os.path.exists(GENERATED_FILES_DIR):
     os.makedirs(GENERATED_FILES_DIR)
+
+# 阿里云oss配置
+
+access_key_id = 'LTAI5tRLdpLSkhtXDuDNzTSx'
+access_key_secret = 'lTQ6ISovfHzNtyKUplD8WW947T5vGn'
+bucket_name = 'sphinx-test'
+endpoint = 'https://oss-cn-shanghai.aliyuncs.com'
+
+auth = oss2.Auth(access_key_id, access_key_secret)
+bucket = oss2.Bucket(auth, endpoint, bucket_name)
 
 @app.route('/')
 def serve():
@@ -151,7 +164,7 @@ def build_sphinx():
     full_rst = '\n'.join(content_list)
     
     try:
-        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
+        with tempfile.TemporaryDirectory() as temp_dir:
             parent_dir = pathlib.Path(temp_dir).parent
             save_html_path = parent_dir / 'save_html'
             if not save_html_path.exists():
@@ -166,14 +179,11 @@ def build_sphinx():
             docs_dir = os.path.join(temp_dir, 'docs')
             build_dir = os.path.join(temp_dir, 'build')
             
-            # Create necessary directories
             os.makedirs(docs_dir)
             
-            # Write the rst content to the temporary index.rst file
             with open(os.path.join(docs_dir, 'index.rst'), 'w', encoding='utf-8') as f:
                 f.write(full_rst)
             
-            # Write a basic conf.py if not provided
             conf_py_content = """
 # Configuration file for the Sphinx documentation builder.
 #
@@ -206,7 +216,6 @@ html_static_path = ['_static']
             with open(os.path.join(docs_dir, 'conf.py'), 'w', encoding='utf-8') as f:
                 f.write(conf_py_content)
             
-            # Write a basic Makefile for Unix-like systems
             makefile_content = """
 # Minimal makefile for Sphinx documentation
 #
@@ -231,8 +240,7 @@ help:
 """
             with open(os.path.join(docs_dir, 'Makefile'), 'w', encoding='utf-8') as f:
                 f.write(makefile_content)
-            
-            # Write a basic make.bat for Windows systems
+
             make_bat_content = """
 @ECHO OFF
 
@@ -275,18 +283,22 @@ popd
 """
             with open(os.path.join(docs_dir, 'make.bat'), 'w', encoding='utf-8') as f:
                 f.write(make_bat_content)
+
             
-            # Run the Sphinx build process
             subprocess.run(['sphinx-build', '-b', 'html', docs_dir, build_dir], check=True)
             zip_path = os.path.join(temp_dir, 'sphinx_build.zip')
             shutil.make_archive(os.path.splitext(zip_path)[0], 'zip', build_dir)
 
-            # html_path = os.path.join(build_dir, 'index.html')
             shutil.move(build_dir, save_html_path)
             index_file_path = build_file_path / "index.html"
-            webbrowser.open("file://" + str(index_file_path))
+            
+            # os.chdir(index_file_path)
+            # PORT = 8000
+            # Handler = http.server.SimpleHTTPRequestHandler
+            # httpd = socketserver.TCPServer(("", PORT), Handler)
+            # httpd.serve_forever()
+            webbrowser.open(index_file_path)
         
-            # Send the zip file back to the client
             return send_file(zip_path, as_attachment=True, download_name='sphinx_build.zip')
         
     except subprocess.CalledProcessError as e:
@@ -295,16 +307,18 @@ popd
 @app.route('/upload', methods=['POST'])
 def upload():
     try:
-        # Get the file from the request
         file = request.files['file']
         filename = file.filename
 
-        access_key_id = 'LTAI5tRLdpLSkhtXDuDNzTSx'
-        access_key_secret = 'lTQ6ISovfHzNtyKUplD8WW947T5vGn'
+        if bucket.object_exists(filename):
+            filename, extension = os.path.splitext(filename)
+            filename = f"{filename}_{uuid.uuid4().hex}{extension}"
 
-        # notice: to upload successfully, do not use vpn
-        auth = oss2.Auth(access_key_id, access_key_secret)
-        bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', 'sphinx-test')
+        # access_key_id = 'LTAI5tRLdpLSkhtXDuDNzTSx'
+        # access_key_secret = 'lTQ6ISovfHzNtyKUplD8WW947T5vGn'
+
+        # auth = oss2.Auth(access_key_id, access_key_secret)
+        # bucket = oss2.Bucket(auth, 'https://oss-cn-shanghai.aliyuncs.com', 'sphinx-test')
 
         local_path = f"/tmp/{filename}"
         file.save(local_path)
@@ -318,7 +332,7 @@ def upload():
 
     except Exception as e:
         print(f"Error uploading file: {e}")
-        return jsonify({"message": "An error occurred while uploading the file."}), 500
+        return jsonify({"message": f"An error occurred while uploading the file."}), 500
 
 @app.route('/<path:path>')
 def static_proxy(path):

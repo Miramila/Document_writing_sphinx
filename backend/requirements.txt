@@ -2,3 +2,5 @@ Flask
 flask-cors
 docutils
 oss2
+sphinx
+sphinx-rtd-theme
