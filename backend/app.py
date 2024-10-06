@@ -16,7 +16,7 @@ import socketserver
 import uuid
 
 app = Flask(__name__, static_folder='static', static_url_path='/')
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 GENERATED_FILES_DIR = "../generated_files"
 if not os.path.exists(GENERATED_FILES_DIR):
@@ -297,7 +297,8 @@ popd
             # Handler = http.server.SimpleHTTPRequestHandler
             # httpd = socketserver.TCPServer(("", PORT), Handler)
             # httpd.serve_forever()
-            webbrowser.open(index_file_path)
+            print(str(index_file_path))
+            webbrowser.open("file://" + str(index_file_path))
         
             return send_file(zip_path, as_attachment=True, download_name='sphinx_build.zip')
         
