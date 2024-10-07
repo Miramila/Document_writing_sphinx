@@ -1,6 +1,6 @@
 import React from 'react';
 import { Menu } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
+import { ToolOutlined } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
 
@@ -13,7 +13,7 @@ const Sidebar = ({ formatSelectedText, showModal }) => {
       mode="inline"
       theme="dark"
     >
-      <SubMenu key="sub1" icon={<MailOutlined />} title="rst_syntax_templates">
+      <SubMenu key="sub1" icon={<ToolOutlined />} title="RST Functions">
         <SubMenu key="sub2" title="rst_role">
           <Menu.Item key="sub2-1" onClick={() => formatSelectedText("title")}>标题 Title</Menu.Item>
           <Menu.Item key="sub2-2" onClick={() => formatSelectedText("bold")}>加粗 Bold</Menu.Item>

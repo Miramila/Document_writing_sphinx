@@ -633,11 +633,14 @@ function App() {
               Build Sphinx Docs
             </Button>
           </div>
-          <div className="absolute bottom-0 left-0 m-4">
+          <div className="fixed bottom-0 left-0 m-4">
             <Button
               type="primary"
               size={"medium"}
-              style={{ backgroundColor: 'transparent', border: '1px solid #1890ff' }}
+              style={{ 
+                backgroundColor: '#1890ff', 
+                border: '1px solid #1890ff'
+              }}
               onClick={() => window.location.href = 'http://23.95.227.124:8080/'}
             >
               UPP AI Bot
