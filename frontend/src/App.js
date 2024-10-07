@@ -14,6 +14,7 @@ import {
 import { DownloadOutlined } from "@ant-design/icons";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
+import ModalForm from './components/ModalForm';
 
 function App() {
   const { TextArea } = Input;
@@ -78,22 +79,121 @@ function App() {
     }
   };
 
+  const formatText = (selectedText, formatType, extraData = {}) => {
+    let formattedText;
+    switch (formatType) {
+      case "bold":
+        formattedText = `**${selectedText}**`;
+        break;
+      case "italic":
+        formattedText = `*${selectedText}*`;
+        break;
+      case "code":
+        formattedText = `\`\`\`\n${selectedText}\n\`\`\``;
+        break;
+      case "title":
+        formattedText = `${selectedText}\n${"=".repeat(selectedText.length)}\n`;
+        break;
+      case "external_links":
+        formattedText = `.. _${extraData.ref_name}: ${extraData.ref_link}\n`;
+        break;
+      case "internal_links":
+        formattedText = `:ref:\`${selectedText}\``;
+        break;
+      case "paragraphs":
+        formattedText = `${selectedText}\n\n`;
+        break;
+      case "subscript":
+        formattedText = `\\ :sub:\`${selectedText}\`\\ `;
+        break;
+      case "superscript":
+        formattedText = `\\ :sup:\`${selectedText}\`\\ `;
+        break;
+      case "reference":
+        formattedText = `:literal:\`${selectedText}\``;
+        break;
+      case "title-reference":
+        formattedText = `*《${selectedText}》*`;
+        break;
+      case "version":
+        formattedText = `.. versionadded:: ${extraData.version}\n    ${extraData.description}\n`;
+        break;
+      case "csv-table":
+        formattedText = `.. csv-table:: ${extraData.table_title}\n:header: ${extraData.table_header}\n\n${extraData.table_content}\n`;
+        break;
+      case "toctree":
+        formattedText = `.. toctree::\n`;
+        if (extraData.maxdepth) {
+          formattedText += `   :maxdepth: ${extraData.maxdepth}\n`;
+        }
+        if (extraData.caption) {
+          formattedText += `   :caption: ${extraData.caption}\n`;
+        }
+        if (extraData.numbered) {
+          formattedText += `   :numbered:\n`;
+        }
+        formattedText += "\n" + extraData.documents.map((doc) => `   ${doc}`).join("\n") + "\n";
+        break;
+      case "codeblock":
+        formattedText = `.. code-block:: ${extraData.language}\n`;
+        if (extraData.lineno_start) {
+          formattedText += `   :lineno-start: ${extraData.lineno_start}\n`;
+        }
+        if (extraData.emphasize_lines) {
+          formattedText += `   :emphasize-lines: ${extraData.emphasize_lines}\n`;
+        }
+        if (extraData.caption_code) {
+          formattedText += `   :caption: ${extraData.caption_code}\n`;
+        }
+        if (extraData.name) {
+          formattedText += `   :name: ${extraData.name}\n`;
+        }
+        if (extraData.linenos) {
+          formattedText += `   :linenos:\n`;
+        }
+        formattedText += `\n${extraData.code.split('\n').map((line) => `   ${line}`).join('\n')}\n`;
+        break;
+      case "image":
+        formattedText = `.. image:: ${extraData.image_path}\n`;
+        if (extraData.align) {
+          formattedText += `   :align: ${extraData.align}\n`;
+        }
+        if (extraData.alt) {
+          formattedText += `   :alt: ${extraData.alt}\n`;
+        }
+        if (extraData.height) {
+          formattedText += `   :height: ${extraData.height}\n`;
+        }
+        if (extraData.width) {
+          formattedText += `   :width: ${extraData.width}\n`;
+        }
+        if (extraData.loading) {
+          formattedText += `   :loading: ${extraData.loading}\n`;
+        }
+        if (extraData.scale) {
+          formattedText += `   :scale: ${extraData.scale}\n`;
+        }
+        if (extraData.target) {
+          formattedText += `   :target: ${extraData.target}\n`;
+        }
+        break;
+      case "math":
+        formattedText = `.. math::\n\n${extraData.equation}\n`;
+        break;
+      default:
+        formattedText = selectedText;
+    }
+    return formattedText;
+};
+
   const formatSelectedText = async (formatType) => {
     const textArea = textAreaRef.current.resizableTextArea.textArea;
     const startPos = textArea.selectionStart;
     const endPos = textArea.selectionEnd;
     const selectedText = textArea.value.substring(startPos, endPos);
 
-    try {
-      const response = await axiosInstance.post("/format", {
-        text: selectedText,
-        format_type: formatType,
-      });
-      const formattedText = response.data.formatted_text;
-      insertAtCursor(formattedText);
-    } catch (error) {
-      console.error("Error formatting text:", error);
-    }
+    const formattedText = formatText(selectedText, formatType);
+    insertAtCursor(formattedText);
   };
 
   const generateRst = async () => {
@@ -496,605 +596,6 @@ function App() {
       setCsvRows(prevRows => prevRows - 1);
     }
   };
-  
-  
-//     const headerSeparator = columnWidths.map((width) => "=".repeat(width)).join("+");
-//     const rowSeparator = columnWidths.map((width) => "-".repeat(width)).join("+");
-  
-//     let result = `+${rowSeparator}+\n`;
-//     result += `|` + table[0]
-//       .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
-//       .join("|") + `|\n`;
-//     result += `+${headerSeparator}+\n`;
-  
-//     for (let i = 1; i < table.length; i++) {
-//       result += `|` + table[i]
-//         .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
-//         .join("|") + `|\n`;
-//       result += `+${rowSeparator}+\n`;
-//     }
-  
-//     return result;
-//   };
-
-  // const createSimpleTable = (table) => {
-  //   let columnWidths = table[0].map(
-  //     (_, colIndex) => Math.max(...table.map((row) => row[colIndex].length)) + 2
-  //   );
-
-  //   const headerSeparator = columnWidths.map((width) => "=".repeat(width)).join("+");
-  //   const rowSeparator = columnWidths.map((width) => "-".repeat(width)).join("+");
-  
-  //   let result = `+${rowSeparator}+\n`;
-  //   result += `|` + table[0]
-  //     .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
-  //     .join("|") + `|\n`;
-  //   result += `+${headerSeparator}+\n`;
-  //   for (let i = 1; i < table.length; i++) {
-  //     result += `|` + table[i]
-  //       .map((cell, index) => ` ${cell}${" ".repeat(columnWidths[index] - cell.length - 2)} `)
-  //       .join("|") + `|\n`;
-  //     result += `+${rowSeparator}+\n`;
-  //   }
-  //   return result;
-  // };
-
-  const getModalContent = () => {
-    switch (modalType) {
-      case "reference":
-        return (
-          <>
-            <Form.Item
-              name="ref_name"
-              label="Reference Name"
-              rules={[
-                { required: true, message: "Please input the reference name!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="ref_link"
-              label="Reference Link"
-              rules={[
-                { required: true, message: "Please input the reference link!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-          </>
-        );
-      case "toctree":
-        return (
-          <>
-            <Form.Item
-              name="maxdepth"
-              label="Max Depth"
-              rules={[
-                { required: true, message: "Please input the max depth!" },
-              ]}
-            >
-              <InputNumber />
-            </Form.Item>
-            <Form.Item name="numbered" valuePropName="checked">
-              <Checkbox>Numbered</Checkbox>
-            </Form.Item>
-            <Form.Item
-              name="documents"
-              label="Documents (one per line)"
-              rules={[
-                { required: true, message: "Please input the documents!" },
-              ]}
-            >
-              <Input.TextArea rows={5} />
-            </Form.Item>
-          </>
-        );
-
-      case "codeblock":
-        return (
-          <>
-            <Form.Item
-              name="language"
-              label="Language"
-              rules={[
-                { required: true, message: "Please input the language name!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              name="code"
-              label="Code (one per line)"
-              rules={[{ required: true, message: "Please input the code!" }]}
-            >
-              <Input.TextArea rows={5} />
-            </Form.Item>
-          </>
-        );
-
-      case "note":
-        return (
-          <>
-            <Form.Item
-              name="note_text"
-              label="Description"
-              rules={[
-                { required: true, message: "Please input the description!" },
-              ]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-          </>
-        );
-
-      case "warning":
-        return (
-          <>
-            <Form.Item
-              name="warning_text"
-              label="Description"
-              rules={[
-                { required: true, message: "Please input the description!" },
-              ]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-          </>
-        );
-
-      case "image":
-        return (
-          <>
-            <Form.Item
-              name="image_url"
-              label="Image URL"
-              rules={[
-                { required: true, message: "Please input the image URL!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-          </>
-        );
-
-      case "figure":
-        return (
-          <>
-            <Form.Item
-              name="figure_url"
-              label="Figure URL"
-              rules={[
-                { required: true, message: "Please input the figure URL!" },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-          </>
-        );
-
-      case "math":
-        return (
-          <Form.Item
-            name="equation"
-            label="Math Equation (one per line)"
-            rules={[
-              { required: true, message: "Please input the math equation!" },
-            ]}
-          >
-            <Input.TextArea />
-          </Form.Item>
-        );
-
-        case "csv-table":
-          return (
-            <>
-              <Form.Item
-                name="rows_csv"
-                label="Number of Rows"
-                rules={[
-                  { required: true, message: "Please input the number of rows!" },
-                ]}
-              >
-                <InputNumber min={1} />
-              </Form.Item>
-              <Form.Item
-                name="columns_csv"
-                label="Number of Columns"
-                rules={[
-                  { required: true, message: "Please input the number of columns!" },
-                ]}
-              >
-                <InputNumber min={1} />
-              </Form.Item>
-            </>
-          );
-  
-          case "csv-table-edit":
-      return (
-        <>
-          <Button type="dashed" onClick={addCsvRow} style={{ marginBottom: '10px' }}>Add Row</Button>
-          <Button type="dashed" onClick={addCsvColumn} style={{ marginBottom: '10px' }}>Add Column</Button>
-          <Button type="dashed" onClick={removeLastCsvRow} style={{ marginBottom: '10px' }}>Remove Row</Button>
-          <Button type="dashed" onClick={removeLastCsvColumn} style={{ marginBottom: '10px' }}>Remove Column</Button>
-          <Form.Item
-            name="table_title"
-            label="Table Title"
-            rules={[{ required: true, message: "Please input the table title!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item label="Header">
-            <Input.Group compact>
-              {Array.from({ length: csvColumns }).map((_, colIndex) => (
-                <Form.Item
-                  key={colIndex}
-                  name={['header', colIndex]}
-                  style={{
-                    display: "inline-block",
-                    width: `calc(100% / ${csvColumns})`,
-                    margin: 0,
-                  }}
-                >
-                  <Input placeholder={`Header ${colIndex + 1}`} />
-                </Form.Item>
-              ))}
-            </Input.Group>
-          </Form.Item>
-          <Form.Item label="Column Widths">
-            <Input.Group compact>
-              {Array.from({ length: csvColumns }).map((_, colIndex) => (
-                <Form.Item
-                  key={colIndex}
-                  name={['widths', colIndex]}
-                  style={{
-                    display: "inline-block",
-                    width: `calc(100% / ${csvColumns})`,
-                    margin: 0,
-                  }}
-                >
-                  <Input placeholder={`Width ${colIndex + 1}`} />
-                </Form.Item>
-              ))}
-            </Input.Group>
-          </Form.Item>
-          {Array.from({ length: csvRows }).map((_, rowIndex) => (
-            <Form.Item key={rowIndex} label={`Row ${rowIndex + 1}`}>
-              <Input.Group compact>
-                {Array.from({ length: csvColumns }).map((_, colIndex) => (
-                  <Form.Item
-                    key={colIndex}
-                    name={['table_content', rowIndex, colIndex]}
-                    style={{
-                      display: "inline-block",
-                      width: `calc(100% / ${csvColumns})`,
-                      margin: 0,
-                    }}
-                  >
-                    <Input placeholder={`Cell ${rowIndex + 1}-${colIndex + 1}`} />
-                  </Form.Item>
-                ))}
-              </Input.Group>
-            </Form.Item>
-          ))}
-        </>
-      );
-
-      case "needbar":
-        return (
-          <>
-            <Form.Item
-              name="bar_title"
-              label="Bar title"
-              rules={[{ required: false, message: "Please input the bar header!" }]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-
-            <Form.Item
-              name="bar_values"
-              label="Bar Values (one per line)"
-              rules={[{ required: true, message: "Please input the bar values!" }]}
-            >
-              <Input.TextArea />
-            </Form.Item>
-          </>
-        );
-
-      case "needlist":
-        return (
-          <>
-            <Form.Item
-              name="tags"
-              label="Tags (comma-separated)"
-              rules={[{ required: false, message: "Please input the tags!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="status"
-              label="Status (comma-separated)"
-              rules={[{ required: false, message: "Please input the status!" }]}
-            >
-              <Input />
-            </Form.Item>
-          </>
-        );
-
-      case "needtable":
-        return (
-          <>
-            <Form.Item
-              name="table_name"
-              label="Table Name"
-              rules={[{ required: false, message: "Please input the table name!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="table_columns"
-              label="Columns (comma-separated)"
-              rules={[{ required: false, message: "Please input the columns!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="table_tags"
-              label="Tags (comma-separated)"
-              rules={[{ required: false, message: "Please input the tags!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="table_status"
-              label="Status (comma-separated)"
-              rules={[{ required: false, message: "Please input the status!" }]}
-            >
-              <Input />
-            </Form.Item>
-          </>
-        );
-
-      case "needflow":
-        return (
-          <>
-            <Form.Item
-              name="flow_name"
-              label="Flowchart Name"
-              rules={[{ required: false, message: "Please input the flowchart name!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="flow_filter"
-              label="Filter"
-              rules={[{ required: false, message: "Please input the filter!" }]}
-            >
-              <TextArea rows={3} />
-            </Form.Item>
-            <Form.Item
-              name="flow_tags"
-              label="Tags (comma-separated)"
-              rules={[{ required: false, message: "Please input the tags!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="flow_linkTypes"
-              label="Link Types (comma-separated)"
-              rules={[{ required: false, message: "Please input the link types!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="show_link_names"
-              label="Show Link Names"
-              rules={[{ required: false, message: "Please input the link names!" }]}
-            >
-              <Checkbox defaultChecked />
-            </Form.Item>
-          </>
-        );
-
-      case "needextract":
-        return (
-          <>
-            <Form.Item
-              name="extract_filter"
-              label="Filter"
-              rules={[{ required: true, message: "Please input the filter!" }]}
-            >
-              <TextArea rows={3} />
-            </Form.Item>
-            <Form.Item
-              name="extract_layout"
-              label="Layout"
-              rules={[{ required: false, message: "Please input the layout!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="extract_style"
-              label="Style"
-              rules={[{ required: false, message: "Please input the style!" }]}
-            >
-              <Input />
-            </Form.Item>
-          </>
-        );
-
-      case "needextend":
-        return (
-          <>
-            <Form.Item
-              name="needextend_filterString"
-              label="Filter String"
-              rules={[{ required: true, message: "Please input the filter string!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="needextend_option"
-              label="Option"
-              rules={[{ required: false, message: "Please input the option!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="needextend_addOption"
-              label="Add Option"
-              rules={[{ required: false, message: "Please input the add option!" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="needextend_removeOption"
-              label="Remove Option"
-              rules={[{ required: false, message: "Please input the remove option!" }]}
-            >
-              <Input />
-            </Form.Item>
-          </>
-        );
-
-      case "grid_table":
-        return (
-          <>
-            <Form.Item
-              name="rows"
-              label="Number of Rows"
-              rules={[
-                { required: true, message: "Please input the number of rows!" },
-              ]}
-            >
-              <InputNumber min={1} />
-            </Form.Item>
-            <Form.Item
-              name="columns"
-              label="Number of Columns"
-              rules={[
-                { required: true, message: "Please input the number of columns!" },
-              ]}
-            >
-              <InputNumber min={1} />
-            </Form.Item>
-          </>
-        );
-
-        case "grid_table_edit":
-          return (
-            <>
-              <Button type="dashed" onClick={addRow} style={{ marginBottom: '10px' }}>Add Row</Button>
-              <Button type="dashed" onClick={addColumn} style={{ marginBottom: '10px' }}>Add Column</Button>
-              <Button type="dashed" onClick={removeLastRow} style={{ marginBottom: '10px' }}>Remove Row</Button>
-              <Button type="dashed" onClick={removeLastColumn} style={{ marginBottom: '10px' }}>Remove Column</Button>
-              <Form.List name="table" initialValue={gridTable}>
-                {(fields, { add, remove }) => (
-                  <>
-                    <Form.Item label="Header">
-                      <Input.Group compact>
-                        {Array.from({ length: gridColumns }).map((_, colIndex) => (
-                          <Form.Item
-                            key={colIndex}
-                            name={[0, colIndex]}
-                            style={{
-                              display: "inline-block",
-                              width: `calc(100% / ${gridColumns})`,
-                              margin: 0,
-                            }}
-                          >
-                            <Input placeholder={`Header ${colIndex + 1}`} />
-                          </Form.Item>
-                        ))}
-                      </Input.Group>
-                    </Form.Item>
-                    {Array.from({ length: gridRows - 1 }).map((_, rowIndex) => (
-                      <Form.Item key={rowIndex + 1} label={`Row ${rowIndex + 1}`}>
-                        <Input.Group compact>
-                          {Array.from({ length: gridColumns }).map((_, colIndex) => (
-                            <Form.Item
-                              key={colIndex}
-                              name={[rowIndex + 1, colIndex]}
-                              style={{
-                                display: "inline-block",
-                                width: `calc(100% / ${gridColumns})`,
-                                margin: 0,
-                              }}
-                            >
-                              <Input placeholder={`Cell ${rowIndex + 1}-${colIndex + 1}`} />
-                            </Form.Item>
-                          ))}
-                        </Input.Group>
-                      </Form.Item>
-                    ))}
-                  </>
-                )}
-              </Form.List>
-            </>
-          );
-      
-
-      // case "simple_table_edit":
-      //       return (
-      //         <Form.List name="table" initialValue={simpleTable}>
-      //           {(fields, { add, remove }) => (
-      //             <>
-      //               <Form.Item label="Header">
-      //                 <Input.Group compact>
-      //                   {Array.from({ length: simpleColumns }).map((_, colIndex) => (
-      //                     <Form.Item
-      //                       key={colIndex}
-      //                       name={[fields[0].name, colIndex]}
-      //                       style={{
-      //                         display: "inline-block",
-      //                         width: `calc(100% / ${simpleColumns})`,
-      //                         margin: 0,
-      //                       }}
-      //                     >
-      //                       <Input placeholder={`Header ${colIndex + 1}`} />
-      //                     </Form.Item>
-      //                   ))}
-      //                 </Input.Group>
-      //               </Form.Item>
-      //               {fields.slice(1).map((field, rowIndex) => (
-      //                 <Form.Item key={rowIndex + 1} label={`Row ${rowIndex + 1}`}>
-      //                   <Input.Group compact>
-      //                     {Array.from({ length: simpleColumns }).map((_, colIndex) => (
-      //                       <Form.Item
-      //                         key={colIndex}
-      //                         name={[field.name, colIndex]}
-      //                         style={{
-      //                           display: "inline-block",
-      //                           width: `calc(100% / ${gridColumns})`,
-      //                           margin: 0,
-      //                         }}
-      //                       >
-      //                         <Input placeholder={`Cell ${rowIndex + 1}-${colIndex + 1}`} />
-      //                       </Form.Item>
-      //                     ))}
-      //                   </Input.Group>
-      //                 </Form.Item>
-      //               ))}
-      //             </>
-      //           )}
-      //         </Form.List>
-      //       );
-
-      default:
-        return (
-          <Form.Item
-            name="directive_text"
-            label="Directive Text"
-            rules={[
-              { required: true, message: "Please input the directive text!" },
-            ]}
-          >
-            <Input.TextArea />
-          </Form.Item>
-        );
-    }
-  };
 
   return (
     <div className="flex h-screen relative">
@@ -1152,7 +653,23 @@ function App() {
         onCancel={handleCancel}
       >
         <Form form={form} layout="vertical" name="form_in_modal">
-          {getModalContent()}
+        <ModalForm
+            form={form}
+            modalType={modalType}
+            addCsvRow={addCsvRow}
+            addCsvColumn={addCsvColumn}
+            removeLastCsvRow={removeLastCsvRow}
+            removeLastCsvColumn={removeLastCsvColumn}
+            csvColumns={csvColumns}
+            csvRows={csvRows}
+            addRow={addRow}
+            addColumn={addColumn}
+            removeLastRow={removeLastRow}
+            removeLastColumn={removeLastColumn}
+            gridTable={gridTable}
+            gridColumns={gridColumns}
+            gridRows={gridRows}
+          />
         </Form>
       </Modal>
     </div>
