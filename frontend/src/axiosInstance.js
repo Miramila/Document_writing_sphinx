@@ -1,13 +1,9 @@
 import axios from 'axios';
+const baseURL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.BACKEND_URL || 'http://localhost:5000',
+  baseURL,
   withCredentials: true,
-  headers: {
-    post: {
-      "Access-Control-Allow-Origin": "*"
-    }
-  }
 });
 
 export default axiosInstance;
